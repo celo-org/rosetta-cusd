@@ -1,0 +1,5 @@
+main
+rosetta-cusd
+.DS_Store
+bin/
+*.tar.gz
