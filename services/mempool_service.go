@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"log"
 
 	"github.com/celo-org/rosetta-cusd/configuration"
 
@@ -10,7 +9,7 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
-// MempoolAPIService implements the server.MempoolAPIServicer interface.
+// Implements the server.MempoolAPIServicer interface.
 type MempoolAPIService struct {
 	config *configuration.Configuration
 	client *client.APIClient
@@ -26,7 +25,7 @@ func NewMempoolAPIService(
 	}
 }
 
-// Mempool - Get All Mempool Transactions
+// endpoint: /mempool
 func (s *MempoolAPIService) Mempool(
 	ctx context.Context,
 	request *types.NetworkRequest,
@@ -36,7 +35,7 @@ func (s *MempoolAPIService) Mempool(
 	return resp, clientErr
 }
 
-// MempoolTransaction - Get a Mempool Transaction
+// endpoint: /mempool/transaction
 func (s *MempoolAPIService) MempoolTransaction(
 	ctx context.Context,
 	request *types.MempoolTransactionRequest,

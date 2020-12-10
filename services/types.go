@@ -14,10 +14,8 @@ const (
 )
 
 var (
-	// MiddlewareVersion is the version
-	// of rosetta-compound. We set this as a
-	// variable instead of a constant because
-	// we typically need the pointer of this
-	// value.
+	// MiddlewareVersion is the version of this package.
+	// We set this as a variable instead of a constant because
+	// we typically need the pointer of this // value.
 	MiddlewareVersion = "0.0.1"
 )

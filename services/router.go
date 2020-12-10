@@ -17,19 +17,38 @@ func NewBlockchainRouter(
 	client *client.APIClient,
 	asserter *asserter.Asserter,
 ) http.Handler {
-	// Proxy calls to /network from ETH + implement own options
+	// Proxy calls to /network from core rosetta + implement own options
 	networkAPIService := NewNetworkAPIService(config, client)
 	networkAPIController := server.NewNetworkAPIController(
 		networkAPIService,
 		asserter,
 	)
 
-	// // Populate blocks using ABI -> use rosetta-ethereum /call
+	// Proxy calls to /account from core rosetta + implement own options
 	blockAPIService := NewBlockAPIService(config, client)
 	blockAPIController := server.NewBlockAPIController(
 		blockAPIService,
 		asserter,
 	)
 
-	return server.NewRouter(networkAPIController, blockAPIController)
+	// Proxy calls to /mempool from core rosetta
+	mempoolAPIService := NewMempoolAPIService(config, client)
+	mempoolAPIController := server.NewMempoolAPIController(
+		mempoolAPIService,
+		asserter,
+	)
+
+	// Proxy calls to /account from core rosetta + implement own options
+	accountAPIService := NewAccountAPIService(config, client)
+	accountAPIController := server.NewAccountAPIController(
+		accountAPIService,
+		asserter,
+	)
+
+	return server.NewRouter(
+		networkAPIController,
+		blockAPIController,
+		mempoolAPIController,
+		accountAPIController,
+	)
 }

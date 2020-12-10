@@ -4,7 +4,6 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
-// Configuration is the config for rosetta-compound
 type Configuration struct {
 	Network           *types.NetworkIdentifier
 	OperationTypes    []string

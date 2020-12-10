@@ -8,11 +8,9 @@ import (
 
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	// "github.com/ethereum/go-ethereum/common"
-	// EthTypes "github.com/ethereum/go-ethereum/core/types"
 )
 
-// BlockAPIService implements the server.BlockAPIServicer interface.
+// Implements the server.BlockAPIServicer interface.
 type BlockAPIService struct {
 	config *configuration.Configuration
 	client *client.APIClient
@@ -28,6 +26,7 @@ func NewBlockAPIService(
 	}
 }
 
+// endpoint: /block
 func (s *BlockAPIService) Block(
 	ctx context.Context,
 	request *types.BlockRequest,
@@ -60,32 +59,7 @@ func (s *BlockAPIService) Block(
 	return resp, nil
 }
 
-// func (s *BlockAPIService) getReceipt(ctx context.Context, transaction *types.TransactionIdentifier) (*EthTypes.Receipt, error) {
-// 	resp, _, err := s.client.CallAPI.Call(ctx, &types.CallRequest{
-// 		NetworkIdentifier: s.config.Network,
-// 		Method:            "eth_getTransactionReceipt",
-// 		Parameters: map[string]interface{}{
-// 			"tx_hash": transaction.Hash,
-// 		},
-// 	})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	hexReceipt, ok := resp.Result["receipt"]
-// 	if !ok {
-// 		return nil, errors.New("receipt is missing")
-// 	}
-// 	bytesReceipt := common.Hex2Bytes(hexReceipt.(string))
-
-// 	receipt := new(EthTypes.Receipt)
-// 	if err := receipt.UnmarshalJSON(bytesReceipt); err != nil {
-// 		return nil, err
-// 	}
-
-// 	return receipt, nil
-// }
-
+// endpoint: /block/transaction
 func (s *BlockAPIService) BlockTransaction(ctx context.Context, request *types.BlockTransactionRequest) (*types.BlockTransactionResponse, *types.Error) {
 	errMsg := "Block Transaction Unimplemented"
 	log.Printf("ERROR %s", errMsg)
@@ -94,21 +68,4 @@ func (s *BlockAPIService) BlockTransaction(ctx context.Context, request *types.B
 		Code: ErrUnimplemented,
 		Message: errMsg,
 	}
-
-	// receipt, err := s.getReceipt(ctx, request.TransactionIdentifier)
-	// if err != nil {
-	// 	return nil, &types.Error{Message: err.Error()}
-	// }
-
-	// operations, err := parser.ParseLogs(ctx, s.config.Contracts, receipt.Logs)
-	// if err != nil {
-	// 	return nil, &types.Error{Message: err.Error()}
-	// }
-
-	// return &types.BlockTransactionResponse{
-	// 	Transaction: &types.Transaction{
-	// 		TransactionIdentifier: request.TransactionIdentifier,
-	// 		Operations:            operations,
-	// 	},
-	// }, nil
 }

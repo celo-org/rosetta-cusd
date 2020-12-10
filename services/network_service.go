@@ -9,6 +9,7 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
+// Implements the server.NetworkAPIService interface.
 type NetworkAPIService struct {
 	config *configuration.Configuration
 	client *client.APIClient
@@ -24,7 +25,7 @@ func NewNetworkAPIService(
 	}
 }
 
-// NetworkList implements the /network/list endpoint
+// endpoint: /network/list
 func (s *NetworkAPIService) NetworkList(
 	ctx context.Context,
 	request *types.MetadataRequest,
@@ -36,7 +37,7 @@ func (s *NetworkAPIService) NetworkList(
 	}, nil
 }
 
-// NetworkStatus implements the /network/status endpoint.
+// endpoint: /network/status
 func (s *NetworkAPIService) NetworkStatus(
 	ctx context.Context,
 	request *types.NetworkRequest,
@@ -46,7 +47,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	return resp, clientErr
 }
 
-// NetworkOptions implements the /network/options endpoint.
+// endpoint: /network/options
 func (s *NetworkAPIService) NetworkOptions(
 	ctx context.Context,
 	request *types.NetworkRequest,
