@@ -28,10 +28,18 @@ import (
 )
 
 func main() {
-	// TODO create CLI for config options
-	config := configuration.Default()
+	rosettaCoreURL := flag.String("core.url", "http://localhost", "Listening URL for core Rosetta RPC server")
+	rosettaCorePort := flag.Uint("core.port", 8080, "Listening port for core Rosetta RPC server")
+	rosettaCusdAddr := flag.String("cusd.addr", "", "Listening address for cUSD http server")
+	rosettaCusdPort := flag.Uint("cusd.port", 8081, "Listening port for cUSD http server")
+	flag.Parse()
+
+	listenAddress := func(addr string, port uint) string {
+		return fmt.Sprintf("%s:%d", addr, port)
+	}
+
 	clientCfg := client.NewConfiguration(
-		config.RosettaCeloURL,
+		listenAddress(*rosettaCoreURL, *rosettaCorePort),
 		fetcher.DefaultUserAgent,
 		&http.Client{
 			Timeout: fetcher.DefaultHTTPTimeout,
@@ -39,11 +47,11 @@ func main() {
 	)
 	client := client.NewAPIClient(clientCfg)
 
-	router, err := services.CreateRouter(config, client)
+	router, err := services.CreateRouter(client)
 	if err != nil {
 		log.Fatal(err)
 	}
 	loggedRouter := server.LoggerMiddleware(router)
-	log.Printf("Listening on port %d\n", config.Port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), loggedRouter))
+	log.Printf("Listening on port %d\n", *rosettaCusdPort)
+	log.Fatal(http.ListenAndServe(listenAddress(*rosettaCusdAddr, *rosettaCusdPort), loggedRouter))
 }

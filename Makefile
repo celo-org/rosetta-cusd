@@ -34,7 +34,7 @@ clean:
 	go clean -cache
 
 add-license:
-	${LICENSE_SCRIPT} services configuration main.go
+	${LICENSE_SCRIPT} services main.go
 
 check-license:
-	${LICENSE_SCRIPT} -check services configuration main.go
+	${LICENSE_SCRIPT} -check services main.go

@@ -18,8 +18,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/celo-org/rosetta-cusd/configuration"
-
 	"github.com/coinbase/rosetta-sdk-go/asserter"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/server"
@@ -28,7 +26,6 @@ import (
 
 // Creates a Mux http.Handler from a collection of server controllers.
 func CreateRouter(
-	config *configuration.Configuration,
 	client *client.APIClient,
 ) (http.Handler, error) {
 
