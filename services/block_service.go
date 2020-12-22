@@ -169,15 +169,9 @@ func (s *BlockAPIService) BlockTransaction(
 			opType = OpMint
 			// Reset related ops, treat mints as standalone
 			prevRelatedOps = &[]*types.OperationIdentifier{}
-		case transferLog.Index == 0:
-			opType = OpTransfer
-			inGroup = true
 		default:
-			if transferLog.Index == 1 {
-				// Begin new group of related payments
-				prevRelatedOps = &[]*types.OperationIdentifier{}
-			}
-			opType = OpFee
+			// TODO: for now, cannot differentiate between transfers and gas fees
+			opType = OpTransfer
 			inGroup = true
 		}
 
