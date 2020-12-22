@@ -76,7 +76,7 @@ func (s *AccountAPIService) AccountBalance(
 		return nil, ErrCeloClient
 	}
 
-	var result CallResult
+	var result rpc.CallResult
 	err = airgap.UnmarshallFromMap(resp.Result, &result)
 
 	if err != nil {

@@ -124,7 +124,7 @@ func (s *BlockAPIService) BlockTransaction(
 		return nil, ErrCeloClient
 	}
 
-	var result CallLogsResult
+	var result rpc.CallLogsResult
 	err = airgap.UnmarshallFromMap(resp.Result, &result)
 	if err != nil {
 		return nil, ErrValidation

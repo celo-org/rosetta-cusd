@@ -15,11 +15,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/celo-org/rosetta-cusd/configuration"
 	"github.com/celo-org/rosetta-cusd/services"
 
 	"github.com/coinbase/rosetta-sdk-go/client"

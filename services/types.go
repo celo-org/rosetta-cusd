@@ -18,7 +18,6 @@ import (
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/common"
-	CeloTypes "github.com/ethereum/go-ethereum/core/types"
 )
 
 const (
@@ -82,18 +81,9 @@ type CallParams struct {
 	BlockNumber *string   `json:"block_number,omitempty"`
 }
 
-type CallResult struct {
-	Raw             []byte                 `json:"raw"`
-	BlockIdentifier *types.BlockIdentifier `json:"block_identifier"`
-}
-
 type CallLogsParams struct {
 	Event     string          `json:"event"`
 	Topics    [][]interface{} `json:"topics,omitempty"`
 	FromBlock string          `json:"from_block"`
 	ToBlock   string          `json:"to_block"`
-}
-
-type CallLogsResult struct {
-	Logs []CeloTypes.Log `json:"logs"`
 }
