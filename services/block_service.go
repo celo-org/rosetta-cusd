@@ -16,7 +16,7 @@ package services
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"math/big"
 	"strconv"
 
@@ -142,7 +142,7 @@ func (s *BlockAPIService) Block(
 	case TestnetId:
 		threshold = StableCoinRegisteredTestnet
 	default:
-		log.Printf("Unknown StableCoin registration for Network %s\n", request.NetworkIdentifier.Network)
+		logError(fmt.Sprintf("Unknown StableCoin registration for Network %s", request.NetworkIdentifier.Network))
 		return nil, ErrValidation
 	}
 

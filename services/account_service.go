@@ -16,7 +16,6 @@ package services
 
 import (
 	"context"
-	"log"
 	"math/big"
 	"strconv"
 
@@ -49,14 +48,12 @@ func (s *AccountAPIService) AccountBalance(
 		Args:   [1]string{request.AccountIdentifier.Address},
 	}
 
-	// TODO modify to allow for taking in the hash as well (to allow for error handling (mismatch between block/hash) to be handled in blockHeader alone?)
-	// TODO --> need to modify core /call endpoint to take in a BlockIdentifier (CallParams)
 	if request.BlockIdentifier != nil {
 		if request.BlockIdentifier.Index != nil {
 			blockNumber := strconv.FormatInt(*request.BlockIdentifier.Index, 10)
 			rawParams.BlockNumber = &blockNumber
 		} else {
-			log.Printf("ERROR: Block number is required when passing in a block identifier.")
+			logError("Block number is required when passing in a block identifier.")
 			return nil, ErrValidation
 		}
 	}
@@ -70,7 +67,6 @@ func (s *AccountAPIService) AccountBalance(
 		Method:            "celo_call",
 		Parameters:        paramsMap,
 	}
-
 	resp, _, err := s.client.CallAPI.Call(ctx, callReq)
 	if err != nil {
 		return nil, ErrCeloClient
@@ -78,9 +74,15 @@ func (s *AccountAPIService) AccountBalance(
 
 	var result rpc.CallResult
 	err = airgap.UnmarshallFromMap(resp.Result, &result)
-
 	if err != nil {
 		return nil, ErrValidation
+	}
+	// Sanity check
+	if request.BlockIdentifier != nil {
+		if request.BlockIdentifier.Hash != nil && *request.BlockIdentifier.Hash != result.BlockIdentifier.Hash {
+			logError("Mismatch between requested and returned block hash.")
+			return nil, ErrInternal
+		}
 	}
 
 	return &types.AccountBalanceResponse{

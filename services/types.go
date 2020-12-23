@@ -15,6 +15,8 @@
 package services
 
 import (
+	"log"
+
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -45,6 +47,7 @@ var (
 	ErrValidation    = rpc.ErrValidation
 	ErrCeloClient    = rpc.ErrCeloClient
 	ErrUnimplemented = rpc.ErrUnimplemented
+	ErrInternal      = rpc.ErrInternal
 
 	AllErrors = []*types.Error{
 		ErrValidation,
@@ -86,4 +89,8 @@ type CallLogsParams struct {
 	Topics    [][]interface{} `json:"topics,omitempty"`
 	FromBlock string          `json:"from_block"`
 	ToBlock   string          `json:"to_block"`
+}
+
+func logError(errMsg string) {
+	log.Printf("ERROR: %s\n", errMsg)
 }
