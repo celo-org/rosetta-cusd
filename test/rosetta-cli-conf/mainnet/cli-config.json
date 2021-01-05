@@ -38,10 +38,9 @@
       "pruning_disabled": false,
       "initial_balance_fetch_disabled": false,
       "end_conditions": {
-        "duration": 12000,
         "reconciliation_coverage": {
           "coverage": 0.95,
-          "from_tip": false,
+          "from_tip": true,
           "tip": true
         }
       }

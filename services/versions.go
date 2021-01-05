@@ -20,10 +20,10 @@ const (
 	// TODO update, sync with core
 	RosettaVersion = "1.4.6"
 	// TODO revisit: manage dependency upon RosettaCore server running alongside this
-	RosettaCoreVersion = "v0.7.6-eelanagaraj/rosetta-cusd-fixes"
+	RosettaCoreVersion = "master@c749ba869cc8fd70f4719fa726e0efead033c60b"
 	// NodeVersion is the version of
 	// geth we are using
-	NodeVersion = "TODO"
+	NodeVersion = "1.1.2"
 )
 
 var (

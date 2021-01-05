@@ -61,12 +61,16 @@ github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46f
 github.com/celo-org/bls-zexe/go v0.0.0-20200502082044-230d2f4866d5/go.mod h1:CzbB0Yl65q4G1bsLEZGKW+wTLdIInCLLXyJSL7IZqnk=
 github.com/celo-org/celo-blockchain v1.1.1 h1:R6w5ckC7J/BfLIBh4qElZ7E55vRZFEdKfkLwTC16M8s=
 github.com/celo-org/celo-blockchain v1.1.1/go.mod h1:/3n/+Rf2pTN4j8qenJ2kAK/yCqKeMoMR2e+X2k42qsU=
+github.com/celo-org/celo-blockchain v1.1.2 h1:cqMAJPe4ND8VE27Nin31O4yEvT/OHemZAhdDHMNbTZw=
+github.com/celo-org/celo-blockchain v1.1.2/go.mod h1:/3n/+Rf2pTN4j8qenJ2kAK/yCqKeMoMR2e+X2k42qsU=
 github.com/celo-org/celo-bls-go v0.1.6 h1:S9hfmKp02Wbd6k3GkCwc/1uCeg68ZP6JZ7qFGHIhCB8=
 github.com/celo-org/celo-bls-go v0.1.6/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK2rWdLC1Cfaqo=
 github.com/celo-org/kliento v0.1.2-0.20200608140637-c5afc8cf0f44 h1:OIwtA7H4/P/9nh6ZL4Q2vZ9VO8azMzo7X0jyKRNrs0c=
 github.com/celo-org/kliento v0.1.2-0.20200608140637-c5afc8cf0f44/go.mod h1:OrzUyeaXpAgTfhl0+wUG4Y+Tfn+wpL49t2/5S9z9zjQ=
 github.com/celo-org/rosetta v0.7.7-0.20201222104501-5308094bba5a h1:ZvK9i4YQqm+pE/0cziixrm982hfN1uFrF7Hg50pb1fw=
 github.com/celo-org/rosetta v0.7.7-0.20201222104501-5308094bba5a/go.mod h1:A9bH3XlEXHG5vUmxpQ3/VehIoj+3/PVtS9DAuRXXJqI=
+github.com/celo-org/rosetta v0.7.7-0.20210105143400-c749ba869cc8 h1:/rypL7E5x+9MjOxFS+z5RJ/MKOqpIfKxPHC9XhyFCGE=
+github.com/celo-org/rosetta v0.7.7-0.20210105143400-c749ba869cc8/go.mod h1:A9bH3XlEXHG5vUmxpQ3/VehIoj+3/PVtS9DAuRXXJqI=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
