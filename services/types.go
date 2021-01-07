@@ -76,21 +76,6 @@ var (
 	}
 )
 
-// Using imported call types from Rosetta requires involved manipulations due to
-// different formats expected by the requests vs. the internals of the RPC server.
-type CallParams struct {
-	Method      string    `json:"method,omitempty"`
-	Args        [1]string `json:"args,omitempty"`
-	BlockNumber *string   `json:"block_number,omitempty"`
-}
-
-type CallLogsParams struct {
-	Event     string          `json:"event"`
-	Topics    [][]interface{} `json:"topics,omitempty"`
-	FromBlock string          `json:"from_block"`
-	ToBlock   string          `json:"to_block"`
-}
-
 func logError(errMsg string) {
 	log.Printf("ERROR: %s\n", errMsg)
 }

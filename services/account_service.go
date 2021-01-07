@@ -17,7 +17,6 @@ package services
 import (
 	"context"
 	"math/big"
-	"strconv"
 
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/celo-org/rosetta/service/rpc"
@@ -42,16 +41,23 @@ func (s *AccountAPIService) AccountBalance(
 	ctx context.Context,
 	request *types.AccountBalanceRequest,
 ) (*types.AccountBalanceResponse, *types.Error) {
-
-	rawParams := &CallParams{
-		Method: "StableToken.balanceOf",
-		Args:   [1]string{request.AccountIdentifier.Address},
+	// Prepare request for core rosetta /call endpoint
+	balanceOfMethod, err := airgap.MethodFromString("StableToken.balanceOf")
+	if err != nil {
+		return nil, ErrInternal
 	}
+	rawParams := &airgap.CallParams{
+		TxArgs: airgap.TxArgs{
+			Method: balanceOfMethod,
+		},
+	}
+	rawParams.Args = append(rawParams.Args, request.AccountIdentifier.Address)
 
+	// Set blockNumber param if applicable; if this is nil, defaults to tip.
 	if request.BlockIdentifier != nil {
 		if request.BlockIdentifier.Index != nil {
-			blockNumber := strconv.FormatInt(*request.BlockIdentifier.Index, 10)
-			rawParams.BlockNumber = &blockNumber
+			blockNumber := new(big.Int).SetInt64(*request.BlockIdentifier.Index)
+			rawParams.BlockNumber = blockNumber
 		} else {
 			logError("Block number is required when passing in a block identifier.")
 			return nil, ErrValidation

@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"strconv"
 
 	"github.com/celo-org/rosetta/airgap"
 	"github.com/celo-org/rosetta/service/rpc"
@@ -103,14 +102,18 @@ func opsFromLog(
 }
 
 func callParamsFromBlock(
-	block int64,
+	block *big.Int,
 	networkId *types.NetworkIdentifier,
 ) (*types.CallRequest, error) {
-	blockIdStr := strconv.FormatInt(block, 10)
-	rawParams := &CallLogsParams{
-		Event:     "StableToken.Transfer",
-		FromBlock: blockIdStr, // fetch single block
-		ToBlock:   blockIdStr,
+	// Prepare filter query for core rosetta /call endpoint
+	transferEvent, err := airgap.EventFromString("StableToken.Transfer")
+	if err != nil {
+		return nil, err
+	}
+	rawParams := &airgap.FilterQueryParams{
+		Event:     transferEvent,
+		FromBlock: block,
+		ToBlock:   block,
 	}
 	paramsMap, err := airgap.MarshallToMap(rawParams)
 	if err != nil {
@@ -153,7 +156,10 @@ func (s *BlockAPIService) Block(
 	}
 
 	// Get the filtered logs for transfer events in the requested block
-	callReq, err := callParamsFromBlock(blockResp.Block.BlockIdentifier.Index, request.NetworkIdentifier)
+	callReq, err := callParamsFromBlock(
+		new(big.Int).SetInt64(blockResp.Block.BlockIdentifier.Index),
+		request.NetworkIdentifier,
+	)
 	if err != nil {
 		return nil, ErrValidation
 	}
