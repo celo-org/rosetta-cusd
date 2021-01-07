@@ -15,15 +15,8 @@
 package services
 
 const (
-	// RosettaVersion is the version of the
-	// Rosetta Specification we are using.
-	// TODO update, sync with core
-	RosettaVersion = "1.4.6"
 	// TODO revisit: manage dependency upon RosettaCore server running alongside this
 	RosettaCoreVersion = "master@c749ba869cc8fd70f4719fa726e0efead033c60b"
-	// NodeVersion is the version of
-	// geth we are using
-	NodeVersion = "1.1.2"
 )
 
 var (

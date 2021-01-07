@@ -59,10 +59,17 @@ func (s *NetworkAPIService) NetworkOptions(
 	ctx context.Context,
 	request *types.NetworkRequest,
 ) (*types.NetworkOptionsResponse, *types.Error) {
+	resp, clientErr, err := s.client.NetworkAPI.NetworkOptions(ctx, request)
+	if err != nil {
+		return nil, clientErr
+	}
+
+	// TODO check that resp.Version.MiddlewareVersion matches expected RosettaCoreVersion
+
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
-			RosettaVersion:    RosettaVersion,
-			NodeVersion:       NodeVersion,
+			RosettaVersion:    resp.Version.RosettaVersion,
+			NodeVersion:       resp.Version.NodeVersion,
 			MiddlewareVersion: &MiddlewareVersion,
 		},
 		Allow: &types.Allow{
