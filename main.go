@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -22,9 +23,11 @@ import (
 
 	"github.com/celo-org/rosetta-cusd/services"
 
+	"github.com/coinbase/rosetta-sdk-go/asserter"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/fetcher"
 	"github.com/coinbase/rosetta-sdk-go/server"
+	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
 func main() {
@@ -47,7 +50,23 @@ func main() {
 	)
 	client := client.NewAPIClient(clientCfg)
 
-	router, err := services.CreateRouter(client)
+	// Make sure network options match underlying core service options
+	resp, _, err := client.NetworkAPI.NetworkList(context.Background(), &types.MetadataRequest{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	asserter, err := asserter.NewServer(
+		services.AllOperationTypes,
+		true,
+		resp.NetworkIdentifiers,
+		nil,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	router, err := services.CreateRouter(client, asserter)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -15,35 +15,18 @@
 package services
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/coinbase/rosetta-sdk-go/asserter"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/server"
-	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
 // Creates a Mux http.Handler from a collection of server controllers.
 func CreateRouter(
 	client *client.APIClient,
+	asserter *asserter.Asserter,
 ) (http.Handler, error) {
-
-	// Make sure network options match underlying core service options
-	resp, _, err := client.NetworkAPI.NetworkList(context.Background(), &types.MetadataRequest{})
-	if err != nil {
-		return nil, err
-	}
-
-	asserter, err := asserter.NewServer(
-		AllOperationTypes,
-		true,
-		resp.NetworkIdentifiers,
-		nil,
-	)
-	if err != nil {
-		return nil, err
-	}
 
 	// Proxy calls to /network from core rosetta
 	networkAPIService := NewNetworkAPIService(client)
