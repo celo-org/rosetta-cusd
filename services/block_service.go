@@ -48,12 +48,10 @@ func opsFromLog(
 	operations *[]*types.Operation,
 	relatedOps *[]*types.OperationIdentifier,
 ) {
-	// TODO ?: Is there a more direct/better way of converting Topic Hash -> Address?
 	from := common.HexToAddress(transferLog.Topics[1].Hex())
 	to := common.HexToAddress(transferLog.Topics[2].Hex())
 
 	value := new(big.Int).SetBytes(transferLog.Data)
-	// TODO ?: Can failed transfers appear in the logs with status !Removed?
 	var status types.OperationStatus
 	if transferLog.Removed {
 		status = OpFailed
@@ -137,15 +135,15 @@ func (s *BlockAPIService) Block(
 		return nil, clientErr
 	}
 
-	// Prior to threshold, StableCoin contract not registered on chain and cannot be accessed via /call
+	// Prior to threshold, StableToken contract not registered on chain and cannot be accessed via /call
 	var threshold int64
 	switch networkId := request.NetworkIdentifier.Network; networkId {
 	case MainnetId:
-		threshold = StableCoinRegisteredMainnet
+		threshold = StableTokenRegisteredMainnet
 	case TestnetId:
-		threshold = StableCoinRegisteredTestnet
+		threshold = StableTokenRegisteredTestnet
 	default:
-		logError(fmt.Sprintf("Unknown StableCoin registration for Network %s", request.NetworkIdentifier.Network))
+		logError(fmt.Sprintf("Unknown StableToken registration for Network %s", request.NetworkIdentifier.Network))
 		return nil, ErrValidation
 	}
 
@@ -240,7 +238,7 @@ func (s *BlockAPIService) BlockTransaction(
 	ctx context.Context,
 	request *types.BlockTransactionRequest,
 ) (*types.BlockTransactionResponse, *types.Error) {
-	// ?: Is this endpoint even necessary if block contains required logic?
+	// TODO: optimize looping logic by filtering logs on transaction
 	blockResp, clientErr := s.Block(ctx, &types.BlockRequest{
 		NetworkIdentifier: request.NetworkIdentifier,
 		BlockIdentifier: &types.PartialBlockIdentifier{

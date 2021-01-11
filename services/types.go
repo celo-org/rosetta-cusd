@@ -23,9 +23,9 @@ import (
 )
 
 const (
-	// Blocks before this do not have StableCoin Contract
-	StableCoinRegisteredTestnet = 544
-	StableCoinRegisteredMainnet = 2962
+	// Blocks before this do not have StableToken Contract
+	StableTokenRegisteredTestnet = 544
+	StableTokenRegisteredMainnet = 2962
 	TestnetId                   = "44787"
 	MainnetId                   = "42220"
 
