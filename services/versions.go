@@ -16,7 +16,8 @@ package services
 
 const (
 	// TODO revisit: manage dependency upon RosettaCore server running alongside this
-	RosettaCoreVersion = "master@c749ba869cc8fd70f4719fa726e0efead033c60b"
+	RosettaCoreVersion = "eelanagaraj/construction-send"
+	// go get github.com/celo-org/rosetta@38858e4f59f5128ce6e3a552fe268d2c6beea55f
 )
 
 var (

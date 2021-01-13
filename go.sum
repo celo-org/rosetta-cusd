@@ -71,6 +71,8 @@ github.com/celo-org/rosetta v0.7.7-0.20201222104501-5308094bba5a h1:ZvK9i4YQqm+p
 github.com/celo-org/rosetta v0.7.7-0.20201222104501-5308094bba5a/go.mod h1:A9bH3XlEXHG5vUmxpQ3/VehIoj+3/PVtS9DAuRXXJqI=
 github.com/celo-org/rosetta v0.7.7-0.20210105143400-c749ba869cc8 h1:/rypL7E5x+9MjOxFS+z5RJ/MKOqpIfKxPHC9XhyFCGE=
 github.com/celo-org/rosetta v0.7.7-0.20210105143400-c749ba869cc8/go.mod h1:A9bH3XlEXHG5vUmxpQ3/VehIoj+3/PVtS9DAuRXXJqI=
+github.com/celo-org/rosetta v0.7.7-0.20210112164533-38858e4f59f5 h1:kZIF9Yeleqi59xjXyJhHGRUUpb9b/3Oso+nfBfTnVhc=
+github.com/celo-org/rosetta v0.7.7-0.20210112164533-38858e4f59f5/go.mod h1:6efaI2uL+rYT/wVExjSmjT5sTNqcJmPidn0CWe0UK1U=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -86,6 +88,7 @@ github.com/cloudflare/cloudflare-go v0.10.2-0.20190916151808-a80f83b9add9/go.mod
 github.com/coinbase/rosetta-sdk-go v0.5.9 h1:CuGQE3HFmYwdEACJnuOtVI9cofqPsGvq6FdFIzaOPKI=
 github.com/coinbase/rosetta-sdk-go v0.5.9/go.mod h1:xd4wYUhV3LkY78SPH8BUhc88rXfn2jYgN9BfiSjbcvM=
 github.com/coinbase/rosetta-sdk-go v0.6.7 h1:v2fzv1cOVWB4A2QjIEcZpuh/CFwfLmX+Jd6qP3AZHN0=
+github.com/coinbase/rosetta-sdk-go v0.6.8 h1:DCWvfpzN9HkKux0eBZwN+9b7vstP4ij77zpyHtYy8dk=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/etcd v3.3.13+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=

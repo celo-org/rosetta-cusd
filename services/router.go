@@ -44,10 +44,15 @@ func CreateRouter(
 	accountAPIService := NewAccountAPIService(client)
 	accountAPIController := server.NewAccountAPIController(accountAPIService, asserter)
 
+	// Proxy calls to /construction/* from core rosetta + implement own options
+	constructionAPIService := NewConstructionAPIService(client)
+	constructionAPIController := server.NewConstructionAPIController(constructionAPIService, asserter)
+
 	return server.NewRouter(
 		networkAPIController,
 		blockAPIController,
 		mempoolAPIController,
 		accountAPIController,
+		constructionAPIController,
 	), nil
 }
