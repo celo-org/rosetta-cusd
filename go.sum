@@ -67,6 +67,8 @@ github.com/celo-org/celo-bls-go v0.1.6 h1:S9hfmKp02Wbd6k3GkCwc/1uCeg68ZP6JZ7qFGH
 github.com/celo-org/celo-bls-go v0.1.6/go.mod h1:eXUCLXu5F1yfd3M+3VaUk5ZUXaA0sLK2rWdLC1Cfaqo=
 github.com/celo-org/kliento v0.1.2-0.20200608140637-c5afc8cf0f44 h1:OIwtA7H4/P/9nh6ZL4Q2vZ9VO8azMzo7X0jyKRNrs0c=
 github.com/celo-org/kliento v0.1.2-0.20200608140637-c5afc8cf0f44/go.mod h1:OrzUyeaXpAgTfhl0+wUG4Y+Tfn+wpL49t2/5S9z9zjQ=
+github.com/celo-org/kliento v0.2.0 h1:x2upUFg7OsYIp4uHkTjnN1sHxgf/U12iEAMVj5UuBP8=
+github.com/celo-org/kliento v0.2.0/go.mod h1:OrzUyeaXpAgTfhl0+wUG4Y+Tfn+wpL49t2/5S9z9zjQ=
 github.com/celo-org/rosetta v0.7.7-0.20201222104501-5308094bba5a h1:ZvK9i4YQqm+pE/0cziixrm982hfN1uFrF7Hg50pb1fw=
 github.com/celo-org/rosetta v0.7.7-0.20201222104501-5308094bba5a/go.mod h1:A9bH3XlEXHG5vUmxpQ3/VehIoj+3/PVtS9DAuRXXJqI=
 github.com/celo-org/rosetta v0.7.7-0.20210105143400-c749ba869cc8 h1:/rypL7E5x+9MjOxFS+z5RJ/MKOqpIfKxPHC9XhyFCGE=

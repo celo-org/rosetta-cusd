@@ -28,6 +28,9 @@ const (
 	StableTokenRegisteredMainnet = 2962
 	TestnetId                    = "44787"
 	MainnetId                    = "42220"
+	// TODO improve with kliento wrapper for this; otherwise need more complex logic with contract upgrades
+	StableTokenAddrTestnet       = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
+	StableTokenAddrMainnet       = "0x765de816845861e75a25fca122bb6898b8b1282a"
 
 	// Operations
 	OpTransfer = "transfer"
