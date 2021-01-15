@@ -18,16 +18,18 @@ import (
 	"math/big"
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"reflect"
+	// "reflect"
 
 	"github.com/celo-org/rosetta/airgap"
-	"github.com/celo-org/rosetta/analyzer"
+	// "github.com/celo-org/rosetta/analyzer"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/parser"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/celo-org/kliento/contracts"
+	gethTypes "github.com/ethereum/go-ethereum/core/types"
 	// "github.com/celo-org/kliento/registry"
 )
 
@@ -128,34 +130,32 @@ func (s *ConstructionAPIService) ConstructionPreprocess(
 	request *types.ConstructionPreprocessRequest,
 ) (*types.ConstructionPreprocessResponse, *types.Error) {
 
+	// TODO have transfer parser just not check for currency in core preprocess?
 	// TODO --> have parseTransferOps use a more general, currency independent function (transferParser(currency) -> func transferParserOps)
 	parseCUSDTransfer := transferParser(OpTransfer, CeloDollar)
+	// TODO potentially simplify parser function to return options OR just simple to parse the actual ops allowed
 	txArgs, rosettaErr := parseCUSDTransfer(request.Operations)
 
 	if rosettaErr != nil {
 		return nil, rosettaErr
 	}
-	// Prepare request for "send" transaction in core construction preprocess
-	sendReq := &types.ConstructionPreprocessRequest{
-		NetworkIdentifier: request.NetworkIdentifier,
-		Operations: []*types.Operation{
-			{
-				OperationIdentifier: &types.OperationIdentifier{
-					Index: 0,
-				},
-				Type: analyzer.OpSend.String(),
-				// Ops were parsed successfully, so use from (ops[0]) identifier
-				Account: request.Operations[0].Account,
-				Metadata: map[string]interface{}{
-					"method": "StableToken.transfer",
-					"args": [2]string{txArgs.To.Hex(), txArgs.Value.String()},
-				},
-			},
-		},
-	}
-	resp, clientErr, _ := s.client.ConstructionAPI.ConstructionPreprocess(ctx, sendReq)
 
-	return resp, clientErr
+	// TODO set this address on the construction object as well?
+	// --> take in networkId as a parameter, then set appropriate tokenAddr?
+	options := make(map[string]interface{})
+	options["From"] = txArgs.From.Hex()
+
+	// TODO adapt ObtainMetadata to directly take in To, Data instead of requiring Method/Args
+	// Then move StableToken methods --> module instead of having that in core as well
+	options["Method"] = "StableToken.transfer"
+	options["Args"] = []string{
+		txArgs.To.Hex(),
+		txArgs.Value.String(),
+	}
+
+	return &types.ConstructionPreprocessResponse{
+		Options: options,
+	}, nil
 }
 
 // endpoint: /construction/metadata
@@ -168,14 +168,82 @@ func (s *ConstructionAPIService) ConstructionMetadata(
 	return resp, clientErr
 }
 
+type transferArgs struct {
+	To common.Address
+	Value *big.Int
+}
+
 // endpoint: /construction/payloads
 func (s *ConstructionAPIService) ConstructionPayloads(
 	ctx context.Context,
 	request *types.ConstructionPayloadsRequest,
 ) (*types.ConstructionPayloadsResponse, *types.Error) {
-	resp, clientErr, _ := s.client.ConstructionAPI.ConstructionPayloads(ctx, request)
 
-	return resp, clientErr
+	// TODO need to construct the unsigned transaction blob for cUSD here
+	var metadata airgap.TxMetadata
+	err := airgap.UnmarshallFromMap(request.Metadata, &metadata)
+	if err != nil {
+		return nil, ErrValidation
+	}
+
+	// TODO re-parse operations to match transfer
+	// TODO add a check for metadata.To == Operations.To && metadata.From == Operations.From
+
+	// TODO move the parsedABI to the actual Construction service as an object?
+	// initialize ABI, pack data via this
+	parsedABI, err := contracts.ParseStableTokenABI()
+	if err != nil {
+		logError("could not parse StableToken ABI")
+		return nil, ErrInternal
+	}
+	// parsedABI.Methods["transfer"]
+	value, ok := new(big.Int).SetString(request.Operations[1].Amount.Value, 10)
+	if !ok {
+		return nil, ErrValidation
+	}
+	// TODO?
+	// args := transferArgs{
+	// 	To: metadata.To,
+	// 	Value: value,
+	// }
+	toAddr := common.HexToAddress(request.Operations[1].Account.Address)
+	metadata.Data, err = parsedABI.Pack(parsedABI.Methods["transfer"].Name, toAddr, value)
+	if err != nil {
+		logError("could not pack transfer data")
+		fmt.Printf("%s\n", err)
+		return nil, ErrValidation
+	}
+	fmt.Printf("%x\n", metadata.Data)
+	hexEnc := hex.EncodeToString(metadata.Data)
+	fmt.Printf("%s\n", hexEnc)
+
+	tx := airgap.Transaction{
+		TxMetadata: &metadata,
+		Signature:  []byte{},
+	}
+	// TODO extract this into a helper function in core and just import
+	gethTx, _ := tx.AsGethTransaction()
+	signer := gethTypes.NewEIP155Signer(tx.ChainId)
+
+	// Construct SigningPayload
+	payload := &types.SigningPayload{
+		AccountIdentifier: &types.AccountIdentifier{
+			Address: tx.From.Hex(),
+		},
+		Bytes:         signer.Hash(gethTx).Bytes(),
+		SignatureType: types.EcdsaRecovery,
+	}
+
+	unsignedTxJSON, err := json.Marshal(tx)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	// add in string(unsignedTxJSON); then end extract TODO; func(tx airgap.Transaction) (unsigned payload string)
+
+	return &types.ConstructionPayloadsResponse{
+		UnsignedTransaction: string(unsignedTxJSON),
+		Payloads:            []*types.SigningPayload{payload},
+	}, nil
 }
 
 // endpoint: /construction/parse
@@ -183,31 +251,46 @@ func (s *ConstructionAPIService) ConstructionParse(
 	ctx context.Context,
 	request *types.ConstructionParseRequest,
 ) (*types.ConstructionParseResponse, *types.Error) {
-	resp, clientErr, _ := s.client.ConstructionAPI.ConstructionParse(ctx, request)
-	if clientErr != nil {
-		return nil, clientErr
+	var tx airgap.Transaction
+	if !request.Signed {
+		err := json.Unmarshal([]byte(request.Transaction), &tx)
+		if err != nil {
+			return nil, ErrInternal
+		}
+	} else {
+		t := new(gethTypes.Transaction)
+		err := t.UnmarshalJSON([]byte(request.Transaction))
+		if err != nil {
+			return nil, ErrInternal
+		}
+
+		from, err := gethTypes.Sender(gethTypes.NewEIP155Signer(t.ChainId()), t)
+		if err != nil {
+			return nil, ErrInternal
+		}
+
+		txMetadata := &airgap.TxMetadata{
+			To:                  *t.To(),
+			From:                from,
+			ChainId:             t.ChainId(),
+			Gas:                 t.Gas(),
+			GasPrice:            t.GasPrice(),
+			Nonce:               t.Nonce(),
+			Data:                t.Data(),
+			Value:               t.Value(),
+			FeeCurrency:         t.FeeCurrency(),
+			GatewayFee:          t.GatewayFee(),
+			GatewayFeeRecipient: t.GatewayFeeRecipient(),
+		}
+		v, r, s := t.RawSignatureValues()
+		signature := airgap.ValuesToSignature(t.ChainId(), v, r, s)
+
+		tx = airgap.Transaction{
+			TxMetadata: txMetadata,
+			Signature:  signature,
+		}
 	}
-	// Match expected response
-	descriptions := &parser.Descriptions{
-		OperationDescriptions: []*parser.OperationDescription{
-			{
-				Type:    analyzer.OpSend.String(),
-				Account: &parser.AccountDescription{Exists: true},
-				Amount: &parser.AmountDescription{Exists: false},
-				Metadata: []*parser.MetadataDescription{
-					{Key: "contract_address", ValueKind: reflect.String},
-					{Key: "data", ValueKind: reflect.String},
-				},
-			},
-		},
-		ErrUnmatched:    true,
-	}
-	fmt.Printf("%+v\n", resp.Operations[0])
-	matches, err := parser.MatchOperations(descriptions, resp.Operations)
-	if err != nil {
-		return nil, ErrUnclearIntent
-	}
-	fmt.Printf("%+v\n", matches)
+	// Confirm that the transaction will be sent to the StableToken contract
 
 	// TODO move to utils if this logic stays
 	// for now try to parse as long as it matches hard-coded stableToken addr.
@@ -218,99 +301,82 @@ func (s *ConstructionAPIService) ConstructionParse(
 	case TestnetId:
 		stableTokenAddr = StableTokenAddrTestnet
 	default:
-		logError(fmt.Sprintf("Unknown StableToken contract address for Network %s", request.NetworkIdentifier.Network))
+		logError(fmt.Sprintf("unknown StableToken contract address for Network %s", request.NetworkIdentifier.Network))
 		return nil, ErrValidation
 	}
-
-	sendOp, _ := matches[0].First()
-	strAddr, ok := sendOp.Metadata["contract_address"].(string)
-
-	if !ok {
-		logError("unexpected 'contract_address' type; string conversion failed")
-		return nil, ErrValidation
+	if tx.To != common.HexToAddress(stableTokenAddr) {
+		logError("transaction 'To' does not match StableToken address")
+		return nil, ErrUnclearIntent
 	}
-	// Confirm that this is a transaction sent to the StableToken contract
-	if strAddr != stableTokenAddr {
-		logError("'to' address does not match StableToken contract address")
-		return nil, ErrInternal
-	}
-
-	// Unclear if we can use this??
-	// stableToken, err := contracts.NewStableToken(common.HexToAddress(strAddr), nil)
-	// if err != nil {
-	// 	logError("initializing StableToken object failed")
-	// 	return nil, ErrInternal
-	// }
-	// fmt.Printf("Initialized stabletoken\n")
-	// fmt.Printf("%+v\n", stableToken)
-
-	// Process using the deserialize/serialize args of argbuilder/celo method?
-	// TODO --> data is produced through the ABI; perhaps find a way of including the ABI here?
-
-	// TODO could abstract all of this into a ParseStableTokenTransfer function
 
 	parsedABI, err := contracts.ParseStableTokenABI()
 	if err != nil {
 		logError("could not parse StableToken ABI")
 		return nil, ErrInternal
 	}
-	dataStr, ok := sendOp.Metadata["data"].(string)
-	if !ok {
-		logError("unexpected 'data' type; string conversion failed")
-		return nil, ErrValidation
+	// Check method ID
+	transferMethod := parsedABI.Methods["transfer"]
+	method, err := parsedABI.MethodById(tx.Data[:4])
+	if err != nil || method.Name != "transfer" {
+		logError("could not parse method ID")
+		return nil, ErrUnclearIntent
 	}
-	dataBytes, err := hex.DecodeString(dataStr)
+	// Parse data according to transfer(to, value)
+	var transferArgs transferArgs
+	err = transferMethod.Inputs.Unpack(&transferArgs, tx.Data[4:])
 	if err != nil {
-		logError("decoding data to hex bytes")
-		return nil, ErrValidation
+		logError("could not unpack transaction data")
+		return nil, ErrUnclearIntent
 	}
-	method, err := parsedABI.MethodById(dataBytes)
-	if err != nil {
-		return nil, ErrInternal
+	toAddr := transferArgs.To
+	value := transferArgs.Value
+
+	ops := []*types.Operation{
+		{
+			Type: OpTransfer,
+			OperationIdentifier: &types.OperationIdentifier{
+				Index: 0,
+			},
+			Account: &types.AccountIdentifier{
+				Address: tx.From.Hex(),
+			},
+			Amount: &types.Amount{
+				Value:    new(big.Int).Neg(value).String(),
+				Currency: CeloDollar,
+			},
+		},
+		{
+			Type: OpTransfer,
+			OperationIdentifier: &types.OperationIdentifier{
+				Index: 1,
+			},
+			RelatedOperations: []*types.OperationIdentifier{
+				{
+					Index: 0,
+				},
+			},
+			Account: &types.AccountIdentifier{
+				Address: toAddr.Hex(),
+			},
+			Amount: &types.Amount{
+				Value:    value.String(),
+				Currency: CeloDollar,
+			},
+		},
 	}
-	// fmt.Printf("parsed method: %s\n", method)
-	// fmt.Printf("parsed method: %s\n", method.Name)
-	// fmt.Printf("parsed method: %s\n", method.RawName)
-	// fmt.Printf("parsed method: %v\n", method.Outputs)
-	// fmt.Printf("parsed method: %v\n", method.Inputs)
 
-	beepParsed := parsedABI.Methods["transfer"]
-	// fmt.Printf("parsed method: %s\n", beepParsed)
-	// fmt.Printf("parsed method: %s\n", beepParsed.Name)
-	// fmt.Printf("parsed method: %s\n", beepParsed.RawName)
-	// fmt.Printf("parsed method: %v\n", beepParsed.Outputs)
-	// fmt.Printf("parsed method: %v\n", beepParsed.Inputs)
-
-	fmt.Printf("beep?: %s", parsedABI.Methods["transfer"])
-	// TODO --> more robust check that this is the correct ID
-	if (parsedABI.Methods["transfer"].RawName == method.RawName) {
-		fmt.Printf("WEEEEEE we made it!!!\n")
+	var resp *types.ConstructionParseResponse
+	resp = &types.ConstructionParseResponse{
+		Operations: ops,
 	}
-	// attempt to process "send" operation (with assumption that it is StableToken.transfer)
-	// failure at any point --> return ErrUnclearIntent
-
-	// metadata := map[string]interface{}{
-	// 	"contract_address": tx.To.Hex(),
-	// 	"data":             tx.Data,
-	// }
-
-	// ops := []*types.Operation{
-	// 	{
-	// 		Type: analyzer.OpSend.String(),
-	// 		OperationIdentifier: &types.OperationIdentifier{
-	// 			Index: 0,
-	// 		},
-	// 		Account: &types.AccountIdentifier{
-	// 			Address: tx.From.Hex(),
-	// 		},
-	// 		Metadata: metadata,
-	// 	},
-	// }
-
-
-
-	fmt.Printf("%v\n", resp)
-	return nil, ErrUnimplemented
+	if request.Signed {
+		resp.AccountIdentifierSigners = []*types.AccountIdentifier{
+			{
+				Address: tx.From.Hex(),
+			},
+		}
+	}
+	return resp, nil
 }
 
 // endpoint: /construction/combine
@@ -318,10 +384,9 @@ func (s *ConstructionAPIService) ConstructionCombine(
 	ctx context.Context,
 	request *types.ConstructionCombineRequest,
 ) (*types.ConstructionCombineResponse, *types.Error) {
-	resp, _, _ := s.client.ConstructionAPI.ConstructionCombine(ctx, request)
-	// TODO likely passthrough will work here, may need to prepare formatting of request
-	fmt.Printf("%v\n", resp)
-	return nil, ErrUnimplemented
+	resp, clientErr, _ := s.client.ConstructionAPI.ConstructionCombine(ctx, request)
+
+	return resp, clientErr
 }
 
 // endpoint: /construction/hash

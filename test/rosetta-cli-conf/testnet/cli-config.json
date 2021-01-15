@@ -15,7 +15,7 @@
     "compression_disabled": false,
     "memory_limit_disabled": false,
     "construction": {
-      "offline_url": "http://localhost:8080",
+      "offline_url": "http://localhost:8081",
       "max_offline_connections": 4,
       "stale_depth": 30,
       "broadcast_limit": 3,
@@ -32,7 +32,7 @@
           },
           "curve_type": "secp256k1",
           "currency": {
-            "symbol": "cGLD",
+            "symbol": "cUSD",
             "decimals": 18
           }
         }
@@ -41,8 +41,8 @@
       "status_port": 9090,
       "initial_balance_fetch_disabled": false,
       "end_conditions": {
-        "create_account": 2,
-        "send": 2
+        "create_account": 10,
+        "transfer": 10
       }
     },  
     "data": {
