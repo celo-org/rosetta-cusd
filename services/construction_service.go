@@ -15,34 +15,33 @@
 package services
 
 import (
-	"math/big"
 	"context"
-	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
-	// "reflect"
+	"math/big"
 
 	"github.com/celo-org/rosetta/airgap"
-	// "github.com/celo-org/rosetta/analyzer"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/parser"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/celo-org/kliento/contracts"
 	gethTypes "github.com/ethereum/go-ethereum/core/types"
-	// "github.com/celo-org/kliento/registry"
 )
 
 // Implements the server.ConstructionAPIServicer interface.
 type ConstructionAPIService struct {
-	client *client.APIClient
+	client      *client.APIClient
+	stableToken *StableToken
 }
 
 func NewConstructionAPIService(
 	client *client.APIClient,
+	stableToken *StableToken,
 ) *ConstructionAPIService {
 	return &ConstructionAPIService{
-		client: client,
+		client:      client,
+		stableToken: stableToken,
 	}
 }
 
@@ -69,59 +68,60 @@ func checksumAddress(address string) (*common.Address, bool) {
 	return &addr, true
 }
 
-// transferParser creates a closure which when called will
-// match and parse a transfer in a specified currency
-func transferParser(opTransfer string, currency *types.Currency) (func (ops []*types.Operation) (*airgap.TxArgs, *types.Error)) {
-	return func (ops []*types.Operation) (*airgap.TxArgs, *types.Error) {
-		descriptions := &parser.Descriptions{
-			OperationDescriptions: []*parser.OperationDescription{
-				{
-					Type:    opTransfer,
-					Account: &parser.AccountDescription{Exists: true},
-					Amount: &parser.AmountDescription{
-						Exists:   true,
-						Sign:     parser.NegativeAmountSign,
-						Currency: currency,
-					},
-				},
-				{
-					Type:    opTransfer,
-					Account: &parser.AccountDescription{Exists: true},
-					Amount: &parser.AmountDescription{
-						Exists:   true,
-						Sign:     parser.PositiveAmountSign,
-						Currency: currency,
-					},
+func parseTransfer(ops []*types.Operation) (*transferTx, error) {
+	// TODO add a third transfer (without amount) to allow for GasCurrency specification?
+	descriptions := &parser.Descriptions{
+		OperationDescriptions: []*parser.OperationDescription{
+			{
+				Type:    OpTransfer,
+				Account: &parser.AccountDescription{Exists: true},
+				Amount: &parser.AmountDescription{
+					Exists:   true,
+					Sign:     parser.NegativeAmountSign,
+					Currency: CeloDollar,
 				},
 			},
-			OppositeAmounts: [][]int{{0, 1}},
-			ErrUnmatched:    true,
-		}
-		matches, err := parser.MatchOperations(descriptions, ops)
-		if err != nil {
-			return nil, ErrUnclearIntent
-		}
-		fromOp, _ := matches[0].First()
-		fromAddr, ok := checksumAddress(fromOp.Account.Address)
-		if !ok {
-			return nil, ErrValidation
-		}
-		toOp, _ := matches[1].First()
-		toAddr, ok := checksumAddress(toOp.Account.Address)
-		if !ok {
-			return nil, ErrValidation
-		}
-	
-		var txArgs airgap.TxArgs
-		txArgs.From = *fromAddr
-		txArgs.To = toAddr
-		txArgs.Value, ok = new(big.Int).SetString(toOp.Amount.Value, 10)
-		if !ok {
-			return nil, ErrInternal
-		}
-
-		return &txArgs, nil
+			{
+				Type:    OpTransfer,
+				Account: &parser.AccountDescription{Exists: true},
+				Amount: &parser.AmountDescription{
+					Exists:   true,
+					Sign:     parser.PositiveAmountSign,
+					Currency: CeloDollar,
+				},
+			},
+		},
+		OppositeAmounts: [][]int{{0, 1}},
+		ErrUnmatched:    true,
 	}
+
+	matches, err := parser.MatchOperations(descriptions, ops)
+	if err != nil {
+		return nil, err
+	}
+	// Check inputs
+	fieldErr := func(field string) error {
+		return errors.New(fmt.Sprintf("Invalid field: '%s'", field))
+	}
+	fromOp, _ := matches[0].First()
+	fromAddr, ok := checksumAddress(fromOp.Account.Address)
+	if !ok {
+		return nil, fieldErr("From")
+	}
+	toOp, _ := matches[1].First()
+	toAddr, ok := checksumAddress(toOp.Account.Address)
+	if !ok {
+		return nil, fieldErr("To")
+	}
+	value, ok := new(big.Int).SetString(toOp.Amount.Value, 10)
+	if !ok {
+		return nil, fieldErr("Value")
+	}
+	return &transferTx{
+		To:    toAddr,
+		From:  fromAddr,
+		Value: value,
+	}, nil
 }
 
 // endpoint: /construction/preprocess
@@ -130,27 +130,19 @@ func (s *ConstructionAPIService) ConstructionPreprocess(
 	request *types.ConstructionPreprocessRequest,
 ) (*types.ConstructionPreprocessResponse, *types.Error) {
 
-	// TODO have transfer parser just not check for currency in core preprocess?
-	// TODO --> have parseTransferOps use a more general, currency independent function (transferParser(currency) -> func transferParserOps)
-	parseCUSDTransfer := transferParser(OpTransfer, CeloDollar)
-	// TODO potentially simplify parser function to return options OR just simple to parse the actual ops allowed
-	txArgs, rosettaErr := parseCUSDTransfer(request.Operations)
-
-	if rosettaErr != nil {
-		return nil, rosettaErr
+	transferTx, err := parseTransfer(request.Operations)
+	if err != nil {
+		logError(fmt.Sprintf("%s", err))
+		return nil, ErrUnclearIntent
 	}
 
-	// TODO set this address on the construction object as well?
-	// --> take in networkId as a parameter, then set appropriate tokenAddr?
 	options := make(map[string]interface{})
-	options["From"] = txArgs.From.Hex()
-
-	// TODO adapt ObtainMetadata to directly take in To, Data instead of requiring Method/Args
-	// Then move StableToken methods --> module instead of having that in core as well
+	options["From"] = transferTx.From.String()
+	// This is currently necessary to properly estimate gas
 	options["Method"] = "StableToken.transfer"
 	options["Args"] = []string{
-		txArgs.To.Hex(),
-		txArgs.Value.String(),
+		transferTx.To.String(),
+		transferTx.Value.String(),
 	}
 
 	return &types.ConstructionPreprocessResponse{
@@ -168,9 +160,17 @@ func (s *ConstructionAPIService) ConstructionMetadata(
 	return resp, clientErr
 }
 
+// TODO find appropriate home for these
+// TODO make this a subcategory of transferTx
 type transferArgs struct {
-	To common.Address
+	To    common.Address
 	Value *big.Int
+}
+type transferTx struct {
+	To    *common.Address
+	From  *common.Address
+	Value *big.Int
+	// TODO gasCurrency
 }
 
 // endpoint: /construction/payloads
@@ -179,49 +179,38 @@ func (s *ConstructionAPIService) ConstructionPayloads(
 	request *types.ConstructionPayloadsRequest,
 ) (*types.ConstructionPayloadsResponse, *types.Error) {
 
-	// TODO need to construct the unsigned transaction blob for cUSD here
+	// Construct unsigned cUSD transaction blob
 	var metadata airgap.TxMetadata
 	err := airgap.UnmarshallFromMap(request.Metadata, &metadata)
 	if err != nil {
 		return nil, ErrValidation
 	}
 
-	// TODO re-parse operations to match transfer
-	// TODO add a check for metadata.To == Operations.To && metadata.From == Operations.From
-
-	// TODO move the parsedABI to the actual Construction service as an object?
-	// initialize ABI, pack data via this
-	parsedABI, err := contracts.ParseStableTokenABI()
+	transferTx, err := parseTransfer(request.Operations)
 	if err != nil {
-		logError("could not parse StableToken ABI")
-		return nil, ErrInternal
+		return nil, ErrUnclearIntent
 	}
-	// parsedABI.Methods["transfer"]
-	value, ok := new(big.Int).SetString(request.Operations[1].Amount.Value, 10)
-	if !ok {
-		return nil, ErrValidation
-	}
-	// TODO?
+
+	// TODO? --> create ordered args?
 	// args := transferArgs{
-	// 	To: metadata.To,
-	// 	Value: value,
+	// 	To: *transferTx.To,
+	// 	Value: transferTx.Value,
 	// }
-	toAddr := common.HexToAddress(request.Operations[1].Account.Address)
-	metadata.Data, err = parsedABI.Pack(parsedABI.Methods["transfer"].Name, toAddr, value)
+	metadata.Data, err = s.stableToken.ABI.Pack(
+		s.stableToken.ABI.Methods["transfer"].Name,
+		transferTx.To,
+		transferTx.Value,
+	)
 	if err != nil {
 		logError("could not pack transfer data")
-		fmt.Printf("%s\n", err)
 		return nil, ErrValidation
 	}
-	fmt.Printf("%x\n", metadata.Data)
-	hexEnc := hex.EncodeToString(metadata.Data)
-	fmt.Printf("%s\n", hexEnc)
 
 	tx := airgap.Transaction{
 		TxMetadata: &metadata,
 		Signature:  []byte{},
 	}
-	// TODO extract this into a helper function in core and just import
+	// TODO core: extract this into a helper function in core and just import
 	gethTx, _ := tx.AsGethTransaction()
 	signer := gethTypes.NewEIP155Signer(tx.ChainId)
 
@@ -238,7 +227,6 @@ func (s *ConstructionAPIService) ConstructionPayloads(
 	if err != nil {
 		return nil, ErrInternal
 	}
-	// add in string(unsignedTxJSON); then end extract TODO; func(tx airgap.Transaction) (unsigned payload string)
 
 	return &types.ConstructionPayloadsResponse{
 		UnsignedTransaction: string(unsignedTxJSON),
@@ -291,32 +279,14 @@ func (s *ConstructionAPIService) ConstructionParse(
 		}
 	}
 	// Confirm that the transaction will be sent to the StableToken contract
-
-	// TODO move to utils if this logic stays
-	// for now try to parse as long as it matches hard-coded stableToken addr.
-	var stableTokenAddr string
-	switch networkId := request.NetworkIdentifier.Network; networkId {
-	case MainnetId:
-		stableTokenAddr = StableTokenAddrMainnet
-	case TestnetId:
-		stableTokenAddr = StableTokenAddrTestnet
-	default:
-		logError(fmt.Sprintf("unknown StableToken contract address for Network %s", request.NetworkIdentifier.Network))
-		return nil, ErrValidation
-	}
-	if tx.To != common.HexToAddress(stableTokenAddr) {
+	if tx.To != s.stableToken.Address {
 		logError("transaction 'To' does not match StableToken address")
 		return nil, ErrUnclearIntent
 	}
 
-	parsedABI, err := contracts.ParseStableTokenABI()
-	if err != nil {
-		logError("could not parse StableToken ABI")
-		return nil, ErrInternal
-	}
 	// Check method ID
-	transferMethod := parsedABI.Methods["transfer"]
-	method, err := parsedABI.MethodById(tx.Data[:4])
+	transferMethod := s.stableToken.ABI.Methods["transfer"]
+	method, err := s.stableToken.ABI.MethodById(tx.Data[:4])
 	if err != nil || method.Name != "transfer" {
 		logError("could not parse method ID")
 		return nil, ErrUnclearIntent
@@ -395,7 +365,7 @@ func (s *ConstructionAPIService) ConstructionHash(
 	request *types.ConstructionHashRequest,
 ) (*types.TransactionIdentifierResponse, *types.Error) {
 	resp, clientErr, _ := s.client.ConstructionAPI.ConstructionHash(ctx, request)
-	// TODO test: should work as is
+
 	return resp, clientErr
 }
 
@@ -405,6 +375,6 @@ func (s *ConstructionAPIService) ConstructionSubmit(
 	request *types.ConstructionSubmitRequest,
 ) (*types.TransactionIdentifierResponse, *types.Error) {
 	resp, clientErr, _ := s.client.ConstructionAPI.ConstructionSubmit(ctx, request)
-	// TODO test: should work as is
+
 	return resp, clientErr
 }

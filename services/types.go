@@ -15,10 +15,13 @@
 package services
 
 import (
+	"errors"
 	"log"
 
+	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -29,8 +32,9 @@ const (
 	TestnetId                    = "44787"
 	MainnetId                    = "42220"
 	// TODO improve with kliento wrapper for this; otherwise need more complex logic with contract upgrades
-	StableTokenAddrTestnet       = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
-	StableTokenAddrMainnet       = "0x765de816845861e75a25fca122bb6898b8b1282a"
+	// nolint:gosec
+	StableTokenAddrTestnet = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
+	StableTokenAddrMainnet = "0x765de816845861e75a25fca122bb6898b8b1282a"
 
 	// Operations
 	OpTransfer = "transfer"
@@ -81,6 +85,33 @@ var (
 		OpBurn,
 	}
 )
+
+type StableToken struct {
+	BlockThreshold int
+	Address        common.Address
+	ABI            *abi.ABI
+}
+
+func NewStableToken(networkId string) (*StableToken, error) {
+	var params StableToken
+	var err error
+	params.ABI, err = contracts.ParseStableTokenABI()
+	if err != nil {
+		logError("could not parse StableToken ABI")
+		return nil, err
+	}
+	switch networkId {
+	case MainnetId:
+		params.BlockThreshold = StableTokenRegisteredMainnet
+		params.Address = common.HexToAddress(StableTokenAddrMainnet)
+	case TestnetId:
+		params.BlockThreshold = StableTokenRegisteredTestnet
+		params.Address = common.HexToAddress(StableTokenAddrTestnet)
+	default:
+		return nil, errors.New("unable to initialize StableToken")
+	}
+	return &params, nil
+}
 
 func logError(errMsg string) {
 	log.Printf("ERROR: %s\n", errMsg)
