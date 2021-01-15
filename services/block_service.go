@@ -28,7 +28,7 @@ import (
 
 // Implements the server.BlockAPIServicer interface.
 type BlockAPIService struct {
-	client *client.APIClient
+	client      *client.APIClient
 	stableToken *StableToken
 }
 
@@ -37,7 +37,7 @@ func NewBlockAPIService(
 	stableToken *StableToken,
 ) *BlockAPIService {
 	return &BlockAPIService{
-		client: client,
+		client:      client,
 		stableToken: stableToken,
 	}
 }

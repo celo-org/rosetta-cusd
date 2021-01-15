@@ -73,6 +73,8 @@ github.com/celo-org/rosetta v0.7.7-0.20201222104501-5308094bba5a h1:ZvK9i4YQqm+p
 github.com/celo-org/rosetta v0.7.7-0.20201222104501-5308094bba5a/go.mod h1:A9bH3XlEXHG5vUmxpQ3/VehIoj+3/PVtS9DAuRXXJqI=
 github.com/celo-org/rosetta v0.7.7-0.20210105143400-c749ba869cc8 h1:/rypL7E5x+9MjOxFS+z5RJ/MKOqpIfKxPHC9XhyFCGE=
 github.com/celo-org/rosetta v0.7.7-0.20210105143400-c749ba869cc8/go.mod h1:A9bH3XlEXHG5vUmxpQ3/VehIoj+3/PVtS9DAuRXXJqI=
+github.com/celo-org/rosetta v0.7.7-0.20210112104407-a338b95772ab h1:XigViS/O8B0j38BrfJr8gOAUTrFnMDNy5USd5Kzr4R4=
+github.com/celo-org/rosetta v0.7.7-0.20210112104407-a338b95772ab/go.mod h1:6efaI2uL+rYT/wVExjSmjT5sTNqcJmPidn0CWe0UK1U=
 github.com/celo-org/rosetta v0.7.7-0.20210112164533-38858e4f59f5 h1:kZIF9Yeleqi59xjXyJhHGRUUpb9b/3Oso+nfBfTnVhc=
 github.com/celo-org/rosetta v0.7.7-0.20210112164533-38858e4f59f5/go.mod h1:6efaI2uL+rYT/wVExjSmjT5sTNqcJmPidn0CWe0UK1U=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=

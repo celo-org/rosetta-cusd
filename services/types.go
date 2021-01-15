@@ -26,16 +26,6 @@ import (
 )
 
 const (
-	// Blocks before this do not have StableToken Contract
-	StableTokenRegisteredTestnet = 544
-	StableTokenRegisteredMainnet = 2962
-	TestnetId                    = "44787"
-	MainnetId                    = "42220"
-	// TODO improve with kliento wrapper for this; otherwise need more complex logic with contract upgrades
-	// nolint:gosec
-	StableTokenAddrTestnet = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
-	StableTokenAddrMainnet = "0x765de816845861e75a25fca122bb6898b8b1282a"
-
 	// Operations
 	OpTransfer = "transfer"
 	OpFee      = "fee"
@@ -100,13 +90,16 @@ func NewStableToken(networkId string) (*StableToken, error) {
 		logError("could not parse StableToken ABI")
 		return nil, err
 	}
+
 	switch networkId {
-	case MainnetId:
-		params.BlockThreshold = StableTokenRegisteredMainnet
-		params.Address = common.HexToAddress(StableTokenAddrMainnet)
-	case TestnetId:
-		params.BlockThreshold = StableTokenRegisteredTestnet
-		params.Address = common.HexToAddress(StableTokenAddrTestnet)
+	// Mainnet
+	case "42220":
+		params.BlockThreshold = 2962
+		params.Address = common.HexToAddress("0x765de816845861e75a25fca122bb6898b8b1282a")
+	// Testnet
+	case "44787":
+		params.BlockThreshold = 544
+		params.Address = common.HexToAddress("0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1")
 	default:
 		return nil, errors.New("unable to initialize StableToken")
 	}
