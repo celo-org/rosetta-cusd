@@ -34,7 +34,7 @@ func CreateRouter(
 	networkAPIController := server.NewNetworkAPIController(networkAPIService, asserter)
 
 	// Proxy calls to /account from core rosetta + implement own options
-	blockAPIService := NewBlockAPIService(client)
+	blockAPIService := NewBlockAPIService(client, stableToken)
 	blockAPIController := server.NewBlockAPIController(blockAPIService, asserter)
 
 	// Proxy calls to /mempool from core rosetta

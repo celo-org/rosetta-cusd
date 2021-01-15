@@ -87,7 +87,7 @@ var (
 )
 
 type StableToken struct {
-	BlockThreshold int
+	BlockThreshold int64
 	Address        common.Address
 	ABI            *abi.ABI
 }

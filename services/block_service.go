@@ -16,7 +16,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	"github.com/celo-org/rosetta/airgap"
@@ -30,13 +29,16 @@ import (
 // Implements the server.BlockAPIServicer interface.
 type BlockAPIService struct {
 	client *client.APIClient
+	stableToken *StableToken
 }
 
 func NewBlockAPIService(
 	client *client.APIClient,
+	stableToken *StableToken,
 ) *BlockAPIService {
 	return &BlockAPIService{
 		client: client,
+		stableToken: stableToken,
 	}
 }
 
@@ -136,18 +138,7 @@ func (s *BlockAPIService) Block(
 	}
 
 	// Prior to threshold, StableToken contract not registered on chain and cannot be accessed via /call
-	var threshold int64
-	switch networkId := request.NetworkIdentifier.Network; networkId {
-	case MainnetId:
-		threshold = StableTokenRegisteredMainnet
-	case TestnetId:
-		threshold = StableTokenRegisteredTestnet
-	default:
-		logError(fmt.Sprintf("Unknown StableToken registration for Network %s", request.NetworkIdentifier.Network))
-		return nil, ErrValidation
-	}
-
-	if blockResp.Block.BlockIdentifier.Index < threshold {
+	if blockResp.Block.BlockIdentifier.Index < s.stableToken.BlockThreshold {
 		// TODO think about other_transactions
 		blockResp.Block.Transactions = nil
 		return blockResp, nil
