@@ -17,6 +17,7 @@ package services
 import (
 	"errors"
 	"log"
+	"math/big"
 
 	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/rosetta/service/rpc"
@@ -76,6 +77,7 @@ var (
 	}
 )
 
+// Types and wrappers for types that are not specific to one service
 type StableToken struct {
 	BlockThreshold int64
 	Address        common.Address
@@ -104,6 +106,30 @@ func NewStableToken(networkId string) (*StableToken, error) {
 		return nil, errors.New("unable to initialize StableToken")
 	}
 	return &params, nil
+}
+
+func newAtomicOp(
+	account common.Address,
+	opIndex int64,
+	value *big.Int,
+	opStatus *types.OperationStatus,
+	opType string,
+	relatedOps []*types.OperationIdentifier,
+) *types.Operation {
+
+	accountId := rpc.NewAccountIdentifier(account, nil)
+	opId := rpc.NewOperationIdentifier(opIndex)
+	op := &types.Operation{
+		OperationIdentifier: opId,
+		RelatedOperations:   relatedOps,
+		Type:                opType,
+		Account:             &accountId,
+		Amount:              rpc.NewAmount(value, CeloDollar),
+	}
+	if opStatus != nil {
+		op.Status = opStatus.Status
+	}
+	return op
 }
 
 func logError(errMsg string) {

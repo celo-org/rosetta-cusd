@@ -82,7 +82,7 @@ func opsFromLog(
 		inGroup = true
 	}
 	processOp := func(address common.Address, opValue *big.Int, inGroup bool) {
-		op := newAtomicOp(address, *opIndex, opValue, status, opType, *relatedOps)
+		op := newAtomicOp(address, *opIndex, opValue, &status, opType, *relatedOps)
 		*operations = append(*operations, op)
 		*opIndex++
 		// Do not include standalone ops in a related group
@@ -201,27 +201,6 @@ func (s *BlockAPIService) Block(
 	blockResp.OtherTransactions = nil
 
 	return blockResp, nil
-}
-
-func newAtomicOp(
-	account common.Address,
-	opIndex int64,
-	value *big.Int,
-	opStatus types.OperationStatus,
-	opType string,
-	relatedOps []*types.OperationIdentifier,
-) *types.Operation {
-
-	accountId := rpc.NewAccountIdentifier(account, nil)
-	opId := rpc.NewOperationIdentifier(opIndex)
-	return &types.Operation{
-		OperationIdentifier: opId,
-		RelatedOperations:   relatedOps,
-		Type:                opType,
-		Status:              opStatus.Status,
-		Account:             &accountId,
-		Amount:              rpc.NewAmount(value, CeloDollar),
-	}
 }
 
 // endpoint: /block/transaction

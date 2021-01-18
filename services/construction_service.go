@@ -160,8 +160,6 @@ func (s *ConstructionAPIService) ConstructionMetadata(
 	return resp, clientErr
 }
 
-// TODO find appropriate home for these
-// TODO make this a subcategory of transferTx
 type transferArgs struct {
 	To    common.Address
 	Value *big.Int
@@ -190,12 +188,6 @@ func (s *ConstructionAPIService) ConstructionPayloads(
 	if err != nil {
 		return nil, ErrUnclearIntent
 	}
-
-	// TODO? --> create ordered args?
-	// args := transferArgs{
-	// 	To: *transferTx.To,
-	// 	Value: transferTx.Value,
-	// }
 	metadata.Data, err = s.stableToken.ABI.Pack(
 		s.stableToken.ABI.Methods["transfer"].Name,
 		transferTx.To,
@@ -210,7 +202,7 @@ func (s *ConstructionAPIService) ConstructionPayloads(
 		TxMetadata: &metadata,
 		Signature:  []byte{},
 	}
-	// TODO core: extract this into a helper function in core and just import
+	// TODO core: extract this into a helper function in core
 	gethTx, _ := tx.AsGethTransaction()
 	signer := gethTypes.NewEIP155Signer(tx.ChainId)
 
@@ -302,39 +294,9 @@ func (s *ConstructionAPIService) ConstructionParse(
 	value := transferArgs.Value
 
 	ops := []*types.Operation{
-		{
-			Type: OpTransfer,
-			OperationIdentifier: &types.OperationIdentifier{
-				Index: 0,
-			},
-			Account: &types.AccountIdentifier{
-				Address: tx.From.Hex(),
-			},
-			Amount: &types.Amount{
-				Value:    new(big.Int).Neg(value).String(),
-				Currency: CeloDollar,
-			},
-		},
-		{
-			Type: OpTransfer,
-			OperationIdentifier: &types.OperationIdentifier{
-				Index: 1,
-			},
-			RelatedOperations: []*types.OperationIdentifier{
-				{
-					Index: 0,
-				},
-			},
-			Account: &types.AccountIdentifier{
-				Address: toAddr.Hex(),
-			},
-			Amount: &types.Amount{
-				Value:    value.String(),
-				Currency: CeloDollar,
-			},
-		},
+		newAtomicOp(tx.From, 0, new(big.Int).Neg(value), nil, OpTransfer, nil),
+		newAtomicOp(toAddr, 1, value, nil, OpTransfer, []*types.OperationIdentifier{{Index: 0}}),
 	}
-
 	var resp *types.ConstructionParseResponse
 	resp = &types.ConstructionParseResponse{
 		Operations: ops,
