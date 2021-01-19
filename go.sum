@@ -69,6 +69,7 @@ github.com/celo-org/kliento v0.1.2-0.20200608140637-c5afc8cf0f44 h1:OIwtA7H4/P/9
 github.com/celo-org/kliento v0.1.2-0.20200608140637-c5afc8cf0f44/go.mod h1:OrzUyeaXpAgTfhl0+wUG4Y+Tfn+wpL49t2/5S9z9zjQ=
 github.com/celo-org/kliento v0.2.0 h1:x2upUFg7OsYIp4uHkTjnN1sHxgf/U12iEAMVj5UuBP8=
 github.com/celo-org/kliento v0.2.0/go.mod h1:OrzUyeaXpAgTfhl0+wUG4Y+Tfn+wpL49t2/5S9z9zjQ=
+github.com/celo-org/rosetta v0.7.6 h1:tvahX16t9Wr5q84fgu+aHDIc9zodCAvX0LY1d1BTTC0=
 github.com/celo-org/rosetta v0.7.7-0.20201222104501-5308094bba5a h1:ZvK9i4YQqm+pE/0cziixrm982hfN1uFrF7Hg50pb1fw=
 github.com/celo-org/rosetta v0.7.7-0.20201222104501-5308094bba5a/go.mod h1:A9bH3XlEXHG5vUmxpQ3/VehIoj+3/PVtS9DAuRXXJqI=
 github.com/celo-org/rosetta v0.7.7-0.20210105143400-c749ba869cc8 h1:/rypL7E5x+9MjOxFS+z5RJ/MKOqpIfKxPHC9XhyFCGE=
@@ -77,6 +78,10 @@ github.com/celo-org/rosetta v0.7.7-0.20210112104407-a338b95772ab h1:XigViS/O8B0j
 github.com/celo-org/rosetta v0.7.7-0.20210112104407-a338b95772ab/go.mod h1:6efaI2uL+rYT/wVExjSmjT5sTNqcJmPidn0CWe0UK1U=
 github.com/celo-org/rosetta v0.7.7-0.20210112164533-38858e4f59f5 h1:kZIF9Yeleqi59xjXyJhHGRUUpb9b/3Oso+nfBfTnVhc=
 github.com/celo-org/rosetta v0.7.7-0.20210112164533-38858e4f59f5/go.mod h1:6efaI2uL+rYT/wVExjSmjT5sTNqcJmPidn0CWe0UK1U=
+github.com/celo-org/rosetta v0.7.7-0.20210119174829-b8c80d2bec5c h1:sQiQlxtmnoy6dSeHMbXMNH2ukrnbclCG0hzFxoQShmo=
+github.com/celo-org/rosetta v0.7.7-0.20210119174829-b8c80d2bec5c/go.mod h1:6efaI2uL+rYT/wVExjSmjT5sTNqcJmPidn0CWe0UK1U=
+github.com/celo-org/rosetta v0.7.7-0.20210119175349-040db59734bb h1:oASZkdUtQqAUl63HeMSK8DKT550IjnfafjYISPBFVtE=
+github.com/celo-org/rosetta v0.7.7-0.20210119175349-040db59734bb/go.mod h1:6efaI2uL+rYT/wVExjSmjT5sTNqcJmPidn0CWe0UK1U=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=

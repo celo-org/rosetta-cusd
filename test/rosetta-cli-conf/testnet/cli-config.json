@@ -4,7 +4,7 @@
       "network": "44787"
     },
     "online_url": "http://localhost:8081",
-    "data_directory": "checks-datadir-testnet-2",
+    "data_directory": "",
     "http_timeout": 300,
     "max_retries": 5,
     "retry_elapsed_time": 0,

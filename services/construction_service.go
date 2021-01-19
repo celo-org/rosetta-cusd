@@ -22,6 +22,7 @@ import (
 	"math/big"
 
 	"github.com/celo-org/rosetta/airgap"
+	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/parser"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -54,18 +55,6 @@ func (s *ConstructionAPIService) ConstructionDerive(
 
 	return resp, clientErr
 
-}
-
-// TODO move into core, as part of parser interface refactor
-// for testing now
-func checksumAddress(address string) (*common.Address, bool) {
-	var addr common.Address
-	mcAddr, err := common.NewMixedcaseAddressFromString(address)
-	if err != nil {
-		return &addr, false
-	}
-	addr = mcAddr.Address()
-	return &addr, true
 }
 
 func parseTransfer(ops []*types.Operation) (*transferTx, error) {
@@ -104,12 +93,12 @@ func parseTransfer(ops []*types.Operation) (*transferTx, error) {
 		return errors.New(fmt.Sprintf("Invalid field: '%s'", field))
 	}
 	fromOp, _ := matches[0].First()
-	fromAddr, ok := checksumAddress(fromOp.Account.Address)
+	fromAddr, ok := rpc.ChecksumAddress(fromOp.Account.Address)
 	if !ok {
 		return nil, fieldErr("From")
 	}
 	toOp, _ := matches[1].First()
-	toAddr, ok := checksumAddress(toOp.Account.Address)
+	toAddr, ok := rpc.ChecksumAddress(toOp.Account.Address)
 	if !ok {
 		return nil, fieldErr("To")
 	}
@@ -133,7 +122,7 @@ func (s *ConstructionAPIService) ConstructionPreprocess(
 	transferTx, err := parseTransfer(request.Operations)
 	if err != nil {
 		logError(fmt.Sprintf("%s", err))
-		return nil, ErrUnclearIntent
+		return nil, ErrValidation
 	}
 
 	options := make(map[string]interface{})
@@ -186,7 +175,8 @@ func (s *ConstructionAPIService) ConstructionPayloads(
 
 	transferTx, err := parseTransfer(request.Operations)
 	if err != nil {
-		return nil, ErrUnclearIntent
+		logError(fmt.Sprintf("%s", err))
+		return nil, ErrValidation
 	}
 	metadata.Data, err = s.stableToken.ABI.Pack(
 		s.stableToken.ABI.Methods["transfer"].Name,
@@ -273,7 +263,7 @@ func (s *ConstructionAPIService) ConstructionParse(
 	// Confirm that the transaction will be sent to the StableToken contract
 	if tx.To != s.stableToken.Address {
 		logError("transaction 'To' does not match StableToken address")
-		return nil, ErrUnclearIntent
+		return nil, ErrValidation
 	}
 
 	// Check method ID
@@ -281,14 +271,14 @@ func (s *ConstructionAPIService) ConstructionParse(
 	method, err := s.stableToken.ABI.MethodById(tx.Data[:4])
 	if err != nil || method.Name != "transfer" {
 		logError("could not parse method ID")
-		return nil, ErrUnclearIntent
+		return nil, ErrValidation
 	}
 	// Parse data according to transfer(to, value)
 	var transferArgs transferArgs
 	err = transferMethod.Inputs.Unpack(&transferArgs, tx.Data[4:])
 	if err != nil {
 		logError("could not unpack transaction data")
-		return nil, ErrUnclearIntent
+		return nil, ErrValidation
 	}
 	toAddr := transferArgs.To
 	value := transferArgs.Value

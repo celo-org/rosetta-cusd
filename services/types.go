@@ -46,14 +46,12 @@ var (
 	ErrCeloClient    = rpc.ErrCeloClient
 	ErrUnimplemented = rpc.ErrUnimplemented
 	ErrInternal      = rpc.ErrInternal
-	ErrUnclearIntent = rpc.ErrUnclearIntent
 
 	AllErrors = []*types.Error{
 		ErrValidation,
 		ErrCeloClient,
 		ErrUnimplemented,
 		ErrInternal,
-		ErrUnclearIntent,
 	}
 
 	// Operations and statuses
