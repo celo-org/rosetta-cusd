@@ -44,6 +44,7 @@ transfer(1){
     transfer.network = {"network":"44787", "blockchain":"celo"};
     currency = {"symbol":"cUSD", "decimals":18};
     min_balance = "10000000000000000";
+    // For now, ensure send is from an unlocked account with both CELO and cUSD funds
     sender = find_balance({
       "account_identifier": {"address": "0x03dDDE31C7d3Bd9C6d190185E04A340981586427"},
       "minimum_balance":{
