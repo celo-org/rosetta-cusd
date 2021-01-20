@@ -33,6 +33,28 @@ Flags:
       --cUSD.port uint      Listening port for cUSD http server (default: 8081)
 ```
 
+### Building and running from Docker image
+
+*Coming soon -- a rosetta-cusd image in our public repository, once we have tagged our first release.*
+
+To build an up-to-date docker image locally, run the following:
+
+```sh
+cd rosetta-cusd
+docker build -t gcr.io/celo-testnet/rosetta-cusd:$USER .
+```
+
+To run `rosetta-cusd`, first ensure that the rosetta core service is running. If it is running on `localhost`, you can use `"http://host.docker.internal"` as the `CORE_URL` below.
+
+```sh
+# Create and delete:
+docker run --rm -p 8081:8081 gcr.io/celo-testnet/rosetta-cusd:$USER --core.url CORE_URL --core.port CORE_PORT
+# OR name the container, can be restarted after stopping:
+docker run --name rosetta-cusd -p 8081:8081 gcr.io/celo-testnet/rosetta-cusd:$USER --core.url CORE_URL --core.port CORE_PORT
+```
+
+Note that this command will listen for rosetta-cusd requests on port `8081`.
+
 ## Running `rosetta-cli` checks
 
 Run the `rosetta-cli check:data` by running both the core and module servers and then using the appropriate CLI configuration file located in `test/rosetta-cli-conf/[NETWORK]`.
