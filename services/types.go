@@ -15,20 +15,18 @@
 package services
 
 import (
+	"errors"
 	"log"
+	"math/big"
 
+	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 const (
-	// Blocks before this do not have StableToken Contract
-	StableTokenRegisteredTestnet = 544
-	StableTokenRegisteredMainnet = 2962
-	TestnetId                   = "44787"
-	MainnetId                   = "42220"
-
 	// Operations
 	OpTransfer = "transfer"
 	OpFee      = "fee"
@@ -53,6 +51,7 @@ var (
 		ErrValidation,
 		ErrCeloClient,
 		ErrUnimplemented,
+		ErrInternal,
 	}
 
 	// Operations and statuses
@@ -75,6 +74,61 @@ var (
 		OpBurn,
 	}
 )
+
+// Types and wrappers for types that are not specific to one service
+type StableToken struct {
+	BlockThreshold int64
+	Address        common.Address
+	ABI            *abi.ABI
+}
+
+func NewStableToken(networkId string) (*StableToken, error) {
+	var params StableToken
+	var err error
+	params.ABI, err = contracts.ParseStableTokenABI()
+	if err != nil {
+		logError("could not parse StableToken ABI")
+		return nil, err
+	}
+
+	switch networkId {
+	// Mainnet
+	case "42220":
+		params.BlockThreshold = 2962
+		params.Address = common.HexToAddress("0x765de816845861e75a25fca122bb6898b8b1282a")
+	// Testnet
+	case "44787":
+		params.BlockThreshold = 544
+		params.Address = common.HexToAddress("0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1")
+	default:
+		return nil, errors.New("unable to initialize StableToken")
+	}
+	return &params, nil
+}
+
+func newAtomicOp(
+	account common.Address,
+	opIndex int64,
+	value *big.Int,
+	opStatus *types.OperationStatus,
+	opType string,
+	relatedOps []*types.OperationIdentifier,
+) *types.Operation {
+
+	accountId := rpc.NewAccountIdentifier(account, nil)
+	opId := rpc.NewOperationIdentifier(opIndex)
+	op := &types.Operation{
+		OperationIdentifier: opId,
+		RelatedOperations:   relatedOps,
+		Type:                opType,
+		Account:             &accountId,
+		Amount:              rpc.NewAmount(value, CeloDollar),
+	}
+	if opStatus != nil {
+		op.Status = opStatus.Status
+	}
+	return op
+}
 
 func logError(errMsg string) {
 	log.Printf("ERROR: %s\n", errMsg)

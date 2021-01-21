@@ -49,7 +49,7 @@ func (s *AccountAPIService) AccountBalance(
 	rawParams := &airgap.CallParams{
 		TxArgs: airgap.TxArgs{
 			Method: balanceOfMethod,
-			Args: []interface{}{request.AccountIdentifier.Address},
+			Args:   []interface{}{request.AccountIdentifier.Address},
 		},
 	}
 	// Set blockNumber param if applicable; if this is nil, defaults to tip.

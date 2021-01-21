@@ -16,7 +16,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	"github.com/celo-org/rosetta/airgap"
@@ -29,14 +28,17 @@ import (
 
 // Implements the server.BlockAPIServicer interface.
 type BlockAPIService struct {
-	client *client.APIClient
+	client      *client.APIClient
+	stableToken *StableToken
 }
 
 func NewBlockAPIService(
 	client *client.APIClient,
+	stableToken *StableToken,
 ) *BlockAPIService {
 	return &BlockAPIService{
-		client: client,
+		client:      client,
+		stableToken: stableToken,
 	}
 }
 
@@ -80,7 +82,7 @@ func opsFromLog(
 		inGroup = true
 	}
 	processOp := func(address common.Address, opValue *big.Int, inGroup bool) {
-		op := newAtomicOp(address, *opIndex, opValue, status, opType, *relatedOps)
+		op := newAtomicOp(address, *opIndex, opValue, &status, opType, *relatedOps)
 		*operations = append(*operations, op)
 		*opIndex++
 		// Do not include standalone ops in a related group
@@ -136,18 +138,7 @@ func (s *BlockAPIService) Block(
 	}
 
 	// Prior to threshold, StableToken contract not registered on chain and cannot be accessed via /call
-	var threshold int64
-	switch networkId := request.NetworkIdentifier.Network; networkId {
-	case MainnetId:
-		threshold = StableTokenRegisteredMainnet
-	case TestnetId:
-		threshold = StableTokenRegisteredTestnet
-	default:
-		logError(fmt.Sprintf("Unknown StableToken registration for Network %s", request.NetworkIdentifier.Network))
-		return nil, ErrValidation
-	}
-
-	if blockResp.Block.BlockIdentifier.Index < threshold {
+	if blockResp.Block.BlockIdentifier.Index < s.stableToken.BlockThreshold {
 		// TODO think about other_transactions
 		blockResp.Block.Transactions = nil
 		return blockResp, nil
@@ -210,27 +201,6 @@ func (s *BlockAPIService) Block(
 	blockResp.OtherTransactions = nil
 
 	return blockResp, nil
-}
-
-func newAtomicOp(
-	account common.Address,
-	opIndex int64,
-	value *big.Int,
-	opStatus types.OperationStatus,
-	opType string,
-	relatedOps []*types.OperationIdentifier,
-) *types.Operation {
-
-	accountId := rpc.NewAccountIdentifier(account, nil)
-	opId := rpc.NewOperationIdentifier(opIndex)
-	return &types.Operation{
-		OperationIdentifier: opId,
-		RelatedOperations:   relatedOps,
-		Type:                opType,
-		Status:              opStatus.Status,
-		Account:             &accountId,
-		Amount:              rpc.NewAmount(value, CeloDollar),
-	}
 }
 
 // endpoint: /block/transaction

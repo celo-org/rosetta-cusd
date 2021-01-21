@@ -53,6 +53,7 @@ func main() {
 	// Make sure network options match underlying core service options
 	resp, _, err := client.NetworkAPI.NetworkList(context.Background(), &types.MetadataRequest{})
 	if err != nil {
+		log.Printf("Could not get NetworkList\n")
 		log.Fatal(err)
 	}
 
@@ -63,11 +64,19 @@ func main() {
 		nil,
 	)
 	if err != nil {
+		log.Printf("Could not initialize asserter\n")
 		log.Fatal(err)
 	}
 
-	router, err := services.CreateRouter(client, asserter)
+	stableToken, err := services.NewStableToken(resp.NetworkIdentifiers[0].Network)
 	if err != nil {
+		log.Printf("Could not initialize StableToken\n")
+		log.Fatal(err)
+	}
+
+	router, err := services.CreateRouter(client, asserter, stableToken)
+	if err != nil {
+		log.Printf("Could not initialize Router\n")
 		log.Fatal(err)
 	}
 	loggedRouter := server.LoggerMiddleware(router)

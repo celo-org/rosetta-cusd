@@ -1,0 +1,102 @@
+request_funds(1){
+  find_account{
+    currency = {"symbol":"cUSD", "decimals":18};
+    random_account = find_balance({
+      "minimum_balance":{
+        "value": "0",
+        "currency": {{currency}}
+      },
+      "create_limit":1
+    });
+  },
+
+  // Create a separate scenario to request funds so that
+  // the address we are using to request funds does not
+  // get rolled back if funds do not yet exist.
+  request{
+    loaded_account = find_balance({
+      "account_identifier": {{random_account.account_identifier}},
+      "minimum_balance":{
+        "value": "10000000000000000",
+        "currency": {{currency}}
+      }
+    });
+  }
+}
+
+create_account(1){
+  create{
+    network = {"network":"44787", "blockchain":"celo"};
+    key = generate_key({"curve_type": "secp256k1"});
+    account = derive({
+      "network_identifier": {{network}},
+      "public_key": {{key.public_key}}
+    });
+    save_account({
+      "account_identifier": {{account.account_identifier}},
+      "keypair": {{key}}
+    });
+  }
+}
+
+transfer(1){
+  transfer{
+    transfer.network = {"network":"44787", "blockchain":"celo"};
+    currency = {"symbol":"cUSD", "decimals":18};
+    min_balance = "10000000000000000";
+    // For now, ensure send is from an unlocked account with both CELO and cUSD funds
+    sender = find_balance({
+      "account_identifier": {"address": "0x03dDDE31C7d3Bd9C6d190185E04A340981586427"},
+      "minimum_balance":{
+        "value": {{min_balance}},
+            "currency": {{currency}}
+        }
+    });
+    // rough estimate of cap on transaction fee for transfer on Celo
+    // note that this will be paid in cUSD, so roughly convert the GasFee --> cUSD
+    max_fee = "1500000000";
+    // set a lower cap so as to not drain prefunded account too quickly
+    // TODO: division not yet supported in DSL
+    transaction_cap = {{min_balance}} - {{max_fee}};
+
+    recipient_amount = random_number({"minimum": "1", "maximum": {{transaction_cap}}});
+    print_message({"recipient_amount":{{recipient_amount}}});
+
+    sender_amount = 0 - {{recipient_amount}};
+    recipient = find_balance({
+      "not_account_identifier":[{{sender.account_identifier}}],
+      "minimum_balance":{
+        "value": "0",
+        "currency": {{currency}}
+      },
+      "create_limit": 100,
+      "create_probability": 50
+    });    
+    transfer.confirmation_depth = "1";
+    transfer.operations = [
+      {
+        "operation_identifier":{"index":0},
+        "type":"transfer",
+        "account":{{sender.account_identifier}},
+        "amount":{
+          "value": {{sender_amount}},
+          "currency":{{currency}}
+        }
+      },
+      {
+        "operation_identifier":{"index":1},
+        "type":"transfer",
+        "account":{{recipient.account_identifier}},
+        "amount":{
+          "value":{{recipient_amount}},
+          "currency":{{currency}}
+        },
+        "related_operations": [
+          {
+            "index":0
+          }
+        ]
+      }
+  ];
+  }
+}

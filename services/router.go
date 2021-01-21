@@ -26,6 +26,7 @@ import (
 func CreateRouter(
 	client *client.APIClient,
 	asserter *asserter.Asserter,
+	stableToken *StableToken,
 ) (http.Handler, error) {
 
 	// Proxy calls to /network from core rosetta
@@ -33,7 +34,7 @@ func CreateRouter(
 	networkAPIController := server.NewNetworkAPIController(networkAPIService, asserter)
 
 	// Proxy calls to /account from core rosetta + implement own options
-	blockAPIService := NewBlockAPIService(client)
+	blockAPIService := NewBlockAPIService(client, stableToken)
 	blockAPIController := server.NewBlockAPIController(blockAPIService, asserter)
 
 	// Proxy calls to /mempool from core rosetta
@@ -44,10 +45,15 @@ func CreateRouter(
 	accountAPIService := NewAccountAPIService(client)
 	accountAPIController := server.NewAccountAPIController(accountAPIService, asserter)
 
+	// Proxy calls to /construction/* from core rosetta + implement own options
+	constructionAPIService := NewConstructionAPIService(client, stableToken)
+	constructionAPIController := server.NewConstructionAPIController(constructionAPIService, asserter)
+
 	return server.NewRouter(
 		networkAPIController,
 		blockAPIController,
 		mempoolAPIController,
 		accountAPIController,
+		constructionAPIController,
 	), nil
 }
