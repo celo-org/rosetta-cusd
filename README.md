@@ -6,7 +6,9 @@ This module is currently a work in progress, and should not be considered produc
 
 ## Endpoints
 
-Rosetta cUSD exposes the following endpoints:
+Rosetta cUSD exposes Data and Construction API endpoints according to the [Rosetta API spec](https://www.rosetta-api.org/docs/ConstructionApi.html)
+
+The following Data API endpoints are implemented:
 
 * `POST /network/list`: Get List of Available Networks
 * `POST /network/status`: Get Network Status
@@ -17,13 +19,21 @@ Rosetta cUSD exposes the following endpoints:
 * `POST /mempool/transaction`: Get a Mempool Transaction
 * `POST /account/balance`: Get an Account Balance
 
-Currently, the Construction API endpoints are not yet implemented.
+All the Construction API (`POST /construction/*` are implemented) which allow the user to construct and sign cUSD transactions. Note that currently, this only allows transaction gas fees to be paid in CELO, although the CELO platform also allows users to pay gas fees in cUSD. This is a point of future work.
 
 ## Running Rosetta cUSD
 
 Prerequisites: the [core Rosetta RPC server](https://github.com/celo-org/rosetta) must be running in the background, on the version/branch specified in `services/versions.go` under `RosettaCoreVersion` (currently: `beta/construction` commit `040db59734bb`), as this module queries it in order to service the above endpoints. See the [README.md](https://github.com/celo-org/rosetta/blob/master/README.md) for instructions on how to run the core server.
 
-The main command is `go run main.go` with the following flags:
+### Running from source
+
+Navigate to the root repository. Run:
+```sh
+make all
+./rosetta-cusd [optional flags, see below]
+```
+
+The following optional flags can be provided:
 
 ```txt
 Flags:
@@ -35,25 +45,47 @@ Flags:
 
 ### Building and running from Docker image
 
-*Coming soon -- a rosetta-cusd image in our public repository, once we have tagged our first release.*
+#### Recommended: Running using public image registry
 
-To build an up-to-date docker image locally, run the following:
+To run `rosetta-cusd`, first ensure that the rosetta core service is running. If it is running on `localhost`, you can use `"http://host.docker.internal"` as the `$CORE_URL` below.
+
+Pushes to main will create a new docker image in the public registry at us.gcr.io/celo-testnet/rosetta-cusd. To run from a specific commit on master, run:
+
+```sh
+export COMMIT_SHA=COMMIT_TO_RUN  # replace with desired commit
+# Create and delete (--rm flag)
+docker run --rm  -p 8081:8081 us.gcr.io/celo-testnet/rosetta-cusd:$COMMIT_SHA --core.url $CORE_URL --core.port $CORE_PORT
+# OR name the container, can be restarted after stopping
+docker run --name rosetta-cusd -p 8081:8081 us.gcr.io/celo-testnet/rosetta-cusd:$COMMIT_SHA --core.url $CORE_URL --core.port $CORE_PORT
+```
+
+Note that this command will listen for rosetta-cusd requests on port `8081`.
+
+If you run into issues with this, you may need to pull the image first and then retry the above command. To pull the image, you can run the following:
+
+```sh
+docker pull us.gcr.io/celo-testnet/rosetta-cusd:$COMMIT_SHA
+```
+
+#### For devs: Building and running a docker image locally
+
+This is useful for building and testing changes made to the Dockerfile, or for ensuring that changes to the module still work as expected in the docker image that will be created from it.
+
+To build an docker image from the local repo, run the following:
 
 ```sh
 cd rosetta-cusd
 docker build -t gcr.io/celo-testnet/rosetta-cusd:$USER .
 ```
 
-To run `rosetta-cusd`, first ensure that the rosetta core service is running. If it is running on `localhost`, you can use `"http://host.docker.internal"` as the `CORE_URL` below.
+As with running a public image, make sure that the core service is running; see instructions above.
 
 ```sh
 # Create and delete:
-docker run --rm -p 8081:8081 gcr.io/celo-testnet/rosetta-cusd:$USER --core.url CORE_URL --core.port CORE_PORT
+docker run --rm -p 8081:8081 gcr.io/celo-testnet/rosetta-cusd:$USER --core.url $CORE_URL --core.port $CORE_PORT
 # OR name the container, can be restarted after stopping:
-docker run --name rosetta-cusd -p 8081:8081 gcr.io/celo-testnet/rosetta-cusd:$USER --core.url CORE_URL --core.port CORE_PORT
+docker run --name rosetta-cusd -p 8081:8081 gcr.io/celo-testnet/rosetta-cusd:$USER --core.url $CORE_URL --core.port $CORE_PORT
 ```
-
-Note that this command will listen for rosetta-cusd requests on port `8081`.
 
 ## Running `rosetta-cli` checks
 
