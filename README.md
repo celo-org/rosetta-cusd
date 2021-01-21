@@ -21,7 +21,7 @@ Currently, the Construction API endpoints are not yet implemented.
 
 ## Running Rosetta cUSD
 
-Prerequisites: the core Rosetta RPC server must be running in the background, on the version/branch specified in `services/versions.go` under `RosettaCoreVersion` (currently: `master` commit `c749ba869cc8fd70f4719fa726e0efead033c60b`), as this module queries it in order to service the above endpoints.
+Prerequisites: the [core Rosetta RPC server](https://github.com/celo-org/rosetta) must be running in the background, on the version/branch specified in `services/versions.go` under `RosettaCoreVersion` (currently: `beta/construction` commit `040db59734bb`), as this module queries it in order to service the above endpoints. See the [README.md](https://github.com/celo-org/rosetta/blob/master/README.md) for instructions on how to run the core server.
 
 The main command is `go run main.go` with the following flags:
 
