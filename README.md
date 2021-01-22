@@ -49,14 +49,14 @@ Flags:
 
 To run `rosetta-cusd`, first ensure that the rosetta core service is running. If it is running on `localhost`, you can use `"http://host.docker.internal"` as the `$CORE_URL` below.
 
-Pushes to main will create a new docker image in the public registry at us.gcr.io/celo-testnet/rosetta-cusd. To run from a specific commit on master, run:
+Tagged releases will have corresponding docker images in the public registry at [us.gcr.io/celo-testnet/rosetta-cusd](us.gcr.io/celo-testnet/rosetta-cusd). To run from a specific tag, run:
 
 ```sh
-export COMMIT_SHA=COMMIT_TO_RUN  # replace with desired commit
+export RELEASE_VERSION=DESIRED_VERSION  # replace with desired version, ex) v0.0.1
 # Create and delete (--rm flag)
-docker run --rm  -p 8081:8081 us.gcr.io/celo-testnet/rosetta-cusd:$COMMIT_SHA --core.url $CORE_URL --core.port $CORE_PORT
+docker run --rm  -p 8081:8081 us.gcr.io/celo-testnet/rosetta-cusd:$RELEASE_VERSION --core.url $CORE_URL --core.port $CORE_PORT
 # OR name the container, can be restarted after stopping
-docker run --name rosetta-cusd -p 8081:8081 us.gcr.io/celo-testnet/rosetta-cusd:$COMMIT_SHA --core.url $CORE_URL --core.port $CORE_PORT
+docker run --name rosetta-cusd -p 8081:8081 us.gcr.io/celo-testnet/rosetta-cusd:$RELEASE_VERSION --core.url $CORE_URL --core.port $CORE_PORT
 ```
 
 Note that this command will listen for rosetta-cusd requests on port `8081`.
@@ -64,7 +64,7 @@ Note that this command will listen for rosetta-cusd requests on port `8081`.
 If you run into issues with this, you may need to pull the image first and then retry the above command. To pull the image, you can run the following:
 
 ```sh
-docker pull us.gcr.io/celo-testnet/rosetta-cusd:$COMMIT_SHA
+docker pull us.gcr.io/celo-testnet/rosetta-cusd:$RELEASE_VERSION
 ```
 
 #### For devs: Building and running a docker image locally

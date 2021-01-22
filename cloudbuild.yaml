@@ -4,4 +4,6 @@ steps:
   waitFor: ["-"]
 images:
 - 'us.gcr.io/$PROJECT_ID/rosetta-cusd:$COMMIT_SHA'
+- 'us.gcr.io/$PROJECT_ID/rosetta-cusd:$TAG_NAME'
+- 'us.gcr.io/$PROJECT_ID/rosetta-cusd:$latest'
 timeout: 2700s
