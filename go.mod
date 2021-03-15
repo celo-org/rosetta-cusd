@@ -3,11 +3,8 @@ module github.com/celo-org/rosetta-cusd
 go 1.14
 
 require (
-	github.com/celo-org/kliento v0.2.0
-	github.com/celo-org/rosetta v0.7.7-0.20210119175349-040db59734bb
+	github.com/celo-org/celo-blockchain v0.0.0-20210312174223-066a9752f2c2
+	github.com/celo-org/kliento v0.2.1-0.20210315135015-d8610134da4d
+	github.com/celo-org/rosetta v0.7.9-0.20210315142817-f64daf3796a5
 	github.com/coinbase/rosetta-sdk-go v0.5.9
-	github.com/ethereum/go-ethereum v1.9.23
-	github.com/segmentio/golines v0.0.0-20200306054842-869934f8da7b // indirect
 )
-
-replace github.com/ethereum/go-ethereum => github.com/celo-org/celo-blockchain v1.1.2
