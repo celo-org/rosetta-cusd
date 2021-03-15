@@ -23,7 +23,7 @@ All the Construction API (`POST /construction/*` are implemented) which allow th
 
 ## Running Rosetta cUSD
 
-Prerequisites: the [core Rosetta RPC server](https://github.com/celo-org/rosetta) must be running in the background, on the version/branch specified in `services/versions.go` under `RosettaCoreVersion` (currently: `beta/construction` commit `040db59734bb`), as this module queries it in order to service the above endpoints. See the [README.md](https://github.com/celo-org/rosetta/blob/master/README.md) for instructions on how to run the core server.
+Prerequisites: the [core Rosetta RPC server](https://github.com/celo-org/rosetta) must be running in the background, on the version/branch specified in `services/versions.go` under `RosettaCoreVersion` (currently: `beta/construction-donut-preparation` commit `f64daf3796a5`), as this module queries it in order to service the above endpoints. See the [README.md](https://github.com/celo-org/rosetta/blob/master/README.md) for instructions on how to run the core server.
 
 ### Running from source
 

@@ -16,12 +16,12 @@ package services
 
 const (
 	// TODO revisit: manage dependency upon RosettaCore server running alongside this
-	RosettaCoreVersion = "beta/construction"
+	RosettaCoreVersion = "beta/construction-donut-preparation"
 )
 
 var (
 	// MiddlewareVersion is the version of this package.
 	// We set this as a variable instead of a constant because
 	// we typically need the pointer of this // value.
-	MiddlewareVersion = "0.0.1"
+	MiddlewareVersion = "0.0.2"
 )
