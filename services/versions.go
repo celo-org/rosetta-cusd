@@ -16,7 +16,7 @@ package services
 
 const (
 	// TODO revisit: manage dependency upon RosettaCore server running alongside this
-	RosettaCoreVersion = "beta/construction-donut-preparation"
+	RosettaCoreVersion = "beta/construction"
 )
 
 var (
