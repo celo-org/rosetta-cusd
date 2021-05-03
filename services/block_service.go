@@ -22,8 +22,8 @@ import (
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/ethereum/go-ethereum/common"
-	gethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/celo-org/celo-blockchain/common"
+	gethTypes "github.com/celo-org/celo-blockchain/core/types"
 )
 
 // Implements the server.BlockAPIServicer interface.

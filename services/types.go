@@ -22,8 +22,8 @@ import (
 	"github.com/celo-org/kliento/contracts"
 	"github.com/celo-org/rosetta/service/rpc"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/celo-org/celo-blockchain/accounts/abi"
+	"github.com/celo-org/celo-blockchain/common"
 )
 
 const (
