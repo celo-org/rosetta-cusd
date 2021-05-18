@@ -76,6 +76,8 @@ github.com/celo-org/rosetta v0.7.9-0.20210315142817-f64daf3796a5 h1:6Hgxnq8XveUr
 github.com/celo-org/rosetta v0.7.9-0.20210315142817-f64daf3796a5/go.mod h1:NXzA2XHcZPIcsoJpEi5n/4lw4Udofj7yhcGq13YCtbc=
 github.com/celo-org/rosetta v0.8.1-beta.0.20210503132126-7d749c41dabe h1:/5cnKnor2NLAC6/IgzVHeGqsRAyypXj5SDUVW32mwno=
 github.com/celo-org/rosetta v0.8.1-beta.0.20210503132126-7d749c41dabe/go.mod h1:WVcKbTZBGtkJdsbl9QHyjaRrPHSl1Q0J6HOixC9QG6U=
+github.com/celo-org/rosetta v0.8.1-beta.0.20210511214923-198ea5157c3d h1:UVXjOaW+anF2+A2TPR3+bh+6Dg42yETmeb04Iow3PUs=
+github.com/celo-org/rosetta v0.8.1-beta.0.20210511214923-198ea5157c3d/go.mod h1:uu9W5GMKGcLbWXObyYYoG0l2Kxy47+HGCVEyfP63/kw=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
