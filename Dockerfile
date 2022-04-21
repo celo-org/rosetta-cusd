@@ -3,7 +3,7 @@
 #    docker build --build-arg COMMIT_SHA=$COMMIT_SHA -t gcr.io/celo-testnet/rosetta-cusd:$COMMIT_SHA .
 #    docker push gcr.io/celo-testnet/rosetta-cusd:$COMMIT_SHA
 
-FROM golang:1.14.12-alpine as builder
+FROM golang:1.18.0-alpine as builder
 WORKDIR /app
 RUN apk add --no-cache make gcc musl-dev linux-headers git
 
